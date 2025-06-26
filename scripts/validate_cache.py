@@ -1,7 +1,7 @@
 
 import sys
 import pybaseball
-import pandas as pd
+import polars as pl
 
 if __name__ == "__main__":
     season = 2020

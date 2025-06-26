@@ -3,7 +3,7 @@ import urllib.parse
 from typing import Callable, Dict, List, Optional, Union
 from unittest.mock import MagicMock
 
-import pandas as pd
+import polars as pl
 import pytest
 import requests
 from _pytest.monkeypatch import MonkeyPatch
@@ -25,7 +25,7 @@ _ParseDates = Union[bool, List[int], List[str], List[List], Dict]
 
 
 class GetDataFrameCallable(Protocol):
-    def __call__(self, filename: str, parse_dates: _ParseDates = False) -> pd.DataFrame: ...
+    def __call__(self, filename: str, parse_dates: _ParseDates = False) -> pl.DataFrame: ...
 
 
 # Autouse to prevent integration tests sneaking into the unit tests
@@ -137,7 +137,7 @@ def get_data_file_dataframe(data_dir: str) -> GetDataFrameCallable:
     """
         Returns a function that will allow getting a dataframe from a csv file in the tests data directory easily
     """
-    def get_dataframe(filename: str, parse_dates: _ParseDates = False) -> pd.DataFrame:
+    def get_dataframe(filename: str, parse_dates: _ParseDates = False) -> pl.DataFrame:
         """
             Get the DatFrame representation of the contents of a csv file in the tests data directory
 
@@ -145,7 +145,7 @@ def get_data_file_dataframe(data_dir: str) -> GetDataFrameCallable:
             ARGUMENTS:
             filename    : str : the name of the file within the tests data directory to load into a DataFrame
         """
-        return pd.read_csv(os.path.join(data_dir, filename), index_col=0, parse_dates=parse_dates).reset_index(drop=True).convert_dtypes(convert_string=False)
+        return pl.read_csv(os.path.join(data_dir, filename), index_col=0, parse_dates=parse_dates).reset_index(drop=True).convert_dtypes(convert_string=False)
 
     return get_dataframe
 

@@ -1,4 +1,4 @@
-import pandas as pd
+import polars as pl
 
 from pybaseball.playerid_lookup import playerid_lookup
 

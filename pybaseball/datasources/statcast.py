@@ -4,7 +4,7 @@ from datetime import datetime
 from typing import List, Union
 
 import numpy as np
-import pandas as pd
+import polars as pl
 import requests
 
 from .. import cache
@@ -18,7 +18,7 @@ def get_statcast_data_from_csv_url(
     url: str,
     null_replacement: Union[str, int, float, datetime] = np.nan,
     known_percentages: List[str] = []
-) -> pd.DataFrame:
+) -> pl.DataFrame:
     statcast_content = requests.get(ROOT_URL + url, timeout=None).content
     return get_statcast_data_from_csv(
         statcast_content.decode('utf-8'),
@@ -31,8 +31,8 @@ def get_statcast_data_from_csv(
         csv_content: str,
         null_replacement: Union[str, int, float, datetime] = np.nan,
         known_percentages: List[str] = []
-    ) -> pd.DataFrame:
-    data = pd.read_csv(io.StringIO(csv_content))
+    ) -> pl.DataFrame:
+    data = pl.read_csv(io.StringIO(csv_content))
     return postprocessing.try_parse_dataframe(
         data,
         parse_numerics=False,

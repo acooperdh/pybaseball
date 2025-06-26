@@ -1,14 +1,14 @@
 from unittest.mock import MagicMock
 
-import pandas as pd
+import polars as pl
 import pytest
 from _pytest.monkeypatch import MonkeyPatch
 from pybaseball import cache
 
 
 @pytest.fixture(name="mock_data_1")
-def _mock_data_1() -> pd.DataFrame:
-    return pd.DataFrame([1, 2], columns=['a'])
+def _mock_data_1() -> pl.DataFrame:
+    return pl.DataFrame([1, 2], columns=['a'])
 
 @pytest.mark.parametrize(
     "cache_type, method", [
@@ -39,7 +39,7 @@ def test_load_invalid_cache_type() -> None:
         ('parquet', 'to_parquet'),
     ]
 )
-def test_save(monkeypatch: MonkeyPatch, mock_data_1: pd.DataFrame, cache_type: str, method: str) -> None:
+def test_save(monkeypatch: MonkeyPatch, mock_data_1: pl.DataFrame, cache_type: str, method: str) -> None:
     to_method = MagicMock()
     monkeypatch.setattr(mock_data_1, method, to_method)
 
@@ -50,7 +50,7 @@ def test_save(monkeypatch: MonkeyPatch, mock_data_1: pd.DataFrame, cache_type: s
     assert to_method.called_once_with(test_filename)
 
 
-def test_save_invalid_cache_type(mock_data_1: pd.DataFrame) -> None:
+def test_save_invalid_cache_type(mock_data_1: pl.DataFrame) -> None:
     test_filename = 'test.exe'
 
     with pytest.raises(ValueError):

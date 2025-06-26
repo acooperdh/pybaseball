@@ -1,22 +1,22 @@
 
-import pandas as pd
+import polars as pl
 
 from pybaseball.lahman import people
 
 
-def get_age(stats_df: pd.DataFrame, people_df: pd.DataFrame = None) -> pd.DataFrame:
+def get_age(stats_df: pl.DataFrame, people_df: pl.DataFrame = None) -> pl.DataFrame:
     if people_df is None:
         people_df = people()
     return (
         stats_df.merge(
             people_df.filter(["playerID", "birthYear"], axis=1), on="playerID"
         )
-        .assign(age=lambda row: (row.yearID - row.birthYear).astype(pd.Int32Dtype()))
+        .assign(age=lambda row: (row.yearID - row.birthYear).astype(pl.Int32Dtype()))
         .filter(["playerID", "yearID", "age"], axis=1)
     )
 
 
-def get_primary_position(fielding_df: pd.DataFrame) -> pd.DataFrame:
+def get_primary_position(fielding_df: pl.DataFrame) -> pl.DataFrame:
     """
     Determines the primary position of a player during a season. `fielding_df` is
     a DataFrame similar to Lahman Fielding, i.e. it must contain columns, `playerID`,
@@ -36,7 +36,7 @@ def get_primary_position(fielding_df: pd.DataFrame) -> pd.DataFrame:
         .rename({"G": "gm_rank"}, axis=1)
     )
     return (
-        pd.concat((fld_combined_stints, gm_rank_df), axis=1)
+        pl.concat((fld_combined_stints, gm_rank_df), axis=1)
         .query("gm_rank == 1")
         .drop("gm_rank", axis=1)
         .filter(["playerID", "yearID", "POS"])

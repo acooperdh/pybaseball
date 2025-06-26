@@ -1,4 +1,4 @@
-import pandas as pd
+import polars as pl
 
 from tests.conftest import CURRENT_SC_COLUMNS
 
@@ -17,7 +17,7 @@ from pybaseball.statcast_pitcher import (
 
 
 def test_statcast_pitcher() -> None:
-    result: pd.DataFrame = statcast_pitcher('2019-01-01', '2019-12-31', 605483)
+    result: pl.DataFrame = statcast_pitcher('2019-01-01', '2019-12-31', 605483)
 
     assert result is not None
     assert not result.empty
@@ -27,7 +27,7 @@ def test_statcast_pitcher() -> None:
 
 def test_statcast_pitcher_exitvelo_barrels() -> None:
     min_bbe = 100
-    result: pd.DataFrame = statcast_pitcher_exitvelo_barrels(2019, minBBE=min_bbe)
+    result: pl.DataFrame = statcast_pitcher_exitvelo_barrels(2019, minBBE=min_bbe)
 
     assert result is not None
     assert not result.empty
@@ -38,7 +38,7 @@ def test_statcast_pitcher_exitvelo_barrels() -> None:
 
 def test_statcast_pitchers_expected_stats() -> None:
     min_pa = 100
-    result: pd.DataFrame = statcast_pitcher_expected_stats(2019, min_pa)
+    result: pl.DataFrame = statcast_pitcher_expected_stats(2019, min_pa)
 
     assert result is not None
     assert not result.empty
@@ -49,7 +49,7 @@ def test_statcast_pitchers_expected_stats() -> None:
 
 def test_statcast_pitcher_pitch_arsenal() -> None:
     min_p = 250
-    result: pd.DataFrame = statcast_pitcher_pitch_arsenal(2019, min_p)
+    result: pl.DataFrame = statcast_pitcher_pitch_arsenal(2019, min_p)
 
     assert result is not None
     assert not result.empty
@@ -59,7 +59,7 @@ def test_statcast_pitcher_pitch_arsenal() -> None:
 
 def test_statcast_pitcher_arsenal_stats() -> None:
     min_pa = 25
-    result: pd.DataFrame = statcast_pitcher_arsenal_stats(2019, min_pa)
+    result: pl.DataFrame = statcast_pitcher_arsenal_stats(2019, min_pa)
 
     assert result is not None
     assert not result.empty
@@ -70,7 +70,7 @@ def test_statcast_pitcher_arsenal_stats() -> None:
 
 def test_statcast_pitcher_pitch_movement() -> None:
     min_p = 250
-    result: pd.DataFrame = statcast_pitcher_pitch_movement(2019, min_p)
+    result: pl.DataFrame = statcast_pitcher_pitch_movement(2019, min_p)
 
     assert result is not None
     assert not result.empty
@@ -81,7 +81,7 @@ def test_statcast_pitcher_pitch_movement() -> None:
 
 def test_statcast_pitcher_active_spin() -> None:
     min_p = 250
-    result: pd.DataFrame = statcast_pitcher_active_spin(2019, min_p)
+    result: pl.DataFrame = statcast_pitcher_active_spin(2019, min_p)
 
     assert result is not None
     assert not result.empty
@@ -90,7 +90,7 @@ def test_statcast_pitcher_active_spin() -> None:
     assert len(result) > 0
 
 def test_statcast_pitcher_percentile_ranks() -> None:
-    result: pd.DataFrame = statcast_pitcher_percentile_ranks(2019)
+    result: pl.DataFrame = statcast_pitcher_percentile_ranks(2019)
 
     assert result is not None
     assert not result.empty
@@ -99,7 +99,7 @@ def test_statcast_pitcher_percentile_ranks() -> None:
     assert len(result) > 0
 
 def test_statcast_pitcher_spin_dir_comp() -> None:
-    result: pd.DataFrame = statcast_pitcher_spin_dir_comp(2020)
+    result: pl.DataFrame = statcast_pitcher_spin_dir_comp(2020)
 
     assert result is not None
     assert not result.empty
@@ -107,7 +107,7 @@ def test_statcast_pitcher_spin_dir_comp() -> None:
     assert len(result.columns) == 30
     assert len(result) > 100
 def test_statcast_pitcher_bat_tracking() -> None:
-    result: pd.DataFrame = statcast_pitcher_bat_tracking(2024)
+    result: pl.DataFrame = statcast_pitcher_bat_tracking(2024)
 
     assert result is not None
     assert not result.empty

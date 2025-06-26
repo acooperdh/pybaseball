@@ -1,7 +1,7 @@
 from time import sleep
 from typing import Generator
 
-import pandas as pd
+import polars as pl
 import pytest
 
 from pybaseball import get_splits
@@ -15,7 +15,7 @@ def before_after_each() -> Generator[None, None, None]:
     sleep(6) # BBRef will throttle us if we make more than 10 calls per minute
 
 def test_get_splits() -> None:
-    result: pd.DataFrame = get_splits('troutmi01')
+    result: pl.DataFrame = get_splits('troutmi01')
 
     assert result is not None
     assert not result.empty

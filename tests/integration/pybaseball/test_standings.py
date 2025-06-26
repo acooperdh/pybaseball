@@ -1,7 +1,7 @@
 from time import sleep
 from typing import Generator, Optional
 
-import pandas as pd
+import polars as pl
 import pytest
 
 from pybaseball.standings import standings

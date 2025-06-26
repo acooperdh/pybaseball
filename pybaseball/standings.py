@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-import pandas as pd
+import polars as pl
 from bs4 import BeautifulSoup, Comment, PageElement, ResultSet
 
 from . import cache
@@ -14,7 +14,7 @@ def get_soup(year: int) -> BeautifulSoup:
     s = session.get(url).content
     return BeautifulSoup(s, "lxml")
 
-def get_tables(soup: BeautifulSoup, season: int) -> List[pd.DataFrame]:
+def get_tables(soup: BeautifulSoup, season: int) -> List[pl.DataFrame]:
     datasets = []
     if season >= 1969:
         tables: List[PageElement] = soup.find_all('table')
@@ -70,12 +70,12 @@ def get_tables(soup: BeautifulSoup, season: int) -> List[pd.DataFrame]:
         datasets.append(data)
     #convert list-of-lists to dataframes
     for idx in range(len(datasets)):
-        datasets[idx] = pd.DataFrame(datasets[idx])
+        datasets[idx] = pl.DataFrame(datasets[idx])
     return datasets #returns a list of dataframes
 
 
 @cache.df_cache()
-def standings(season:Optional[int] = None) -> pd.DataFrame:
+def standings(season:Optional[int] = None) -> pl.DataFrame:
     """
     Returns a pandas DataFrame of the standings for a given MLB season, or the most recent standings
     if the date is not specified.
@@ -100,7 +100,7 @@ def standings(season:Optional[int] = None) -> pd.DataFrame:
         t = [x for x in soup.find_all(string=lambda text:isinstance(text,Comment)) if 'expanded_standings_overall' in x]
         code = BeautifulSoup(t[0], "lxml")
         raw_tables = get_tables(code, season)
-    tables = [pd.DataFrame(table) for table in raw_tables]
+    tables = [pl.DataFrame(table) for table in raw_tables]
     for idx in range(len(tables)):
         tables[idx] = tables[idx].rename(columns=tables[idx].iloc[0])
         tables[idx] = tables[idx].reindex(tables[idx].index.drop(0))

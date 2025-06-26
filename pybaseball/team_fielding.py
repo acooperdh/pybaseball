@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-import pandas as pd
+import polars as pl
 from bs4 import BeautifulSoup, Comment
 
 from . import cache
@@ -15,7 +15,7 @@ team_fielding = fg_team_fielding_data
 
 
 @cache.df_cache()
-def team_fielding_bref(team: str, start_season: int, end_season: Optional[int]=None) -> pd.DataFrame:
+def team_fielding_bref(team: str, start_season: int, end_season: Optional[int]=None) -> pl.DataFrame:
     """
     Get season-level Fielding Statistics for Specific Team (from Baseball-Reference)
 
@@ -71,7 +71,7 @@ def team_fielding_bref(team: str, start_season: int, end_season: Optional[int]=N
 
     assert headings is not None
     headings.insert(2, "Year")
-    data = pd.DataFrame(data=raw_data, columns=headings)
+    data = pl.DataFrame(data=raw_data, columns=headings)
     data = data.dropna()  # Removes Row of All Nones
 
     postprocessing.coalesce_nulls(data)

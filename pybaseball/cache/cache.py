@@ -5,14 +5,14 @@ import glob
 import os
 from typing import Any, Callable, Dict, Optional, TypeVar, cast
 
-import pandas as pd
+import polars as pl
 
 from . import cache_record, func_utils
 from .cache_config import CacheConfig, autoload_cache
 
 # Doing this instead of defining the types in our cache functions allows VS Code to pick up the proper type annotations
 # https://github.com/microsoft/pyright/issues/774
-_CacheFunc = TypeVar("_CacheFunc", bound=Callable[..., pd.DataFrame])
+_CacheFunc = TypeVar("_CacheFunc", bound=Callable[..., pl.DataFrame])
 
 # Cache is disabled by default
 config = autoload_cache()
@@ -51,7 +51,7 @@ class df_cache:
 
     def __call__(self, func: _CacheFunc) -> _CacheFunc:
         @functools.wraps(func)
-        def _cached(*args: Any, **kwargs: Any) -> pd.DataFrame:
+        def _cached(*args: Any, **kwargs: Any) -> pl.DataFrame:
             func_data = self._safe_get_func_data(func, args, kwargs)
             result = self._safe_load_func_cache(func_data)
 
@@ -94,7 +94,7 @@ class df_cache:
         except:  # pylint: disable=bare-except
             return {}
 
-    def _safe_load_func_cache(self, func_data: Dict) -> Optional[pd.DataFrame]:
+    def _safe_load_func_cache(self, func_data: Dict) -> Optional[pl.DataFrame]:
         try:
             glob_path = os.path.join(self.cache_config.cache_directory, f'{func_data["func"]}*.cache_record.json')
 
@@ -110,7 +110,7 @@ class df_cache:
         except:  # pylint: disable=bare-except
             return None
 
-    def _safe_save_func_cache(self, func_data: Dict, result: pd.DataFrame) -> None:
+    def _safe_save_func_cache(self, func_data: Dict, result: pl.DataFrame) -> None:
         try:
             if self.cache_config.enabled and func_data:
                 new_record = cache_record.CacheRecord(data=func_data, expires=self.expires)

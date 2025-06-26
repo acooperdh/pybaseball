@@ -1,14 +1,14 @@
 import io
 from typing import Optional, Union
 
-import pandas as pd
+import polars as pl
 import requests
 
 from . import cache
 from .utils import sanitize_input, split_request, sanitize_statcast_columns
 
 
-def statcast_batter(start_dt: Optional[str] = None, end_dt: Optional[str] = None, player_id: Optional[int] = None) -> pd.DataFrame:
+def statcast_batter(start_dt: Optional[str] = None, end_dt: Optional[str] = None, player_id: Optional[int] = None) -> pl.DataFrame:
     """
     Pulls statcast pitch-level data from Baseball Savant for a given batter.
 
@@ -30,7 +30,7 @@ def statcast_batter(start_dt: Optional[str] = None, end_dt: Optional[str] = None
     return df
 
 @cache.df_cache()
-def statcast_batter_exitvelo_barrels(year: int, minBBE: Union[int, str] = "q") -> pd.DataFrame:
+def statcast_batter_exitvelo_barrels(year: int, minBBE: Union[int, str] = "q") -> pl.DataFrame:
     """
     Retrieves batted ball data for all batters in a given year.
 
@@ -42,12 +42,12 @@ def statcast_batter_exitvelo_barrels(year: int, minBBE: Union[int, str] = "q") -
     """
     url = f"https://baseballsavant.mlb.com/leaderboard/statcast?type=batter&year={year}&position=&team=&min={minBBE}&csv=true"
     res = requests.get(url, timeout=None).content
-    data = pd.read_csv(io.StringIO(res.decode('utf-8')))
+    data = pl.read_csv(io.StringIO(res.decode('utf-8')))
     data = sanitize_statcast_columns(data)
     return data
 
 @cache.df_cache()
-def statcast_batter_expected_stats(year: int, minPA: Union[int, str] = "q") -> pd.DataFrame:
+def statcast_batter_expected_stats(year: int, minPA: Union[int, str] = "q") -> pl.DataFrame:
     """
     Retrieves expected stats based on quality of batted ball contact in a given year.
 
@@ -58,12 +58,12 @@ def statcast_batter_expected_stats(year: int, minPA: Union[int, str] = "q") -> p
     """
     url = f"https://baseballsavant.mlb.com/leaderboard/expected_statistics?type=batter&year={year}&position=&team=&min={minPA}&csv=true"
     res = requests.get(url, timeout=None).content
-    data = pd.read_csv(io.StringIO(res.decode('utf-8')))
+    data = pl.read_csv(io.StringIO(res.decode('utf-8')))
     data = sanitize_statcast_columns(data)
     return data
 
 @cache.df_cache()
-def statcast_batter_percentile_ranks(year: int) -> pd.DataFrame:
+def statcast_batter_percentile_ranks(year: int) -> pl.DataFrame:
     """
     Retrieves percentile ranks for each player in a given year, including batters with at least 2.1 PA per team 
     game and 1.25 for pitchers.
@@ -73,12 +73,12 @@ def statcast_batter_percentile_ranks(year: int) -> pd.DataFrame:
     """
     url = f"https://baseballsavant.mlb.com/leaderboard/percentile-rankings?type=batter&year={year}&position=&team=&csv=true"
     res = requests.get(url, timeout=None).content
-    data = pd.read_csv(io.StringIO(res.decode('utf-8')))
+    data = pl.read_csv(io.StringIO(res.decode('utf-8')))
     # URL returns a null player with player id 999999, which we want to drop
     return data.loc[data.player_name.notna()].reset_index(drop=True)
 
 @cache.df_cache()
-def statcast_batter_pitch_arsenal(year: int, minPA: int = 25) -> pd.DataFrame:
+def statcast_batter_pitch_arsenal(year: int, minPA: int = 25) -> pl.DataFrame:
     """
     Retrieves outcome data for batters split by the pitch type in a given year.
 
@@ -89,11 +89,11 @@ def statcast_batter_pitch_arsenal(year: int, minPA: int = 25) -> pd.DataFrame:
     """
     url = f"https://baseballsavant.mlb.com/leaderboard/pitch-arsenal-stats?type=batter&pitchType=&year={year}&team=&min={minPA}&csv=true"
     res = requests.get(url, timeout=None).content
-    data = pd.read_csv(io.StringIO(res.decode('utf-8')))
+    data = pl.read_csv(io.StringIO(res.decode('utf-8')))
     data = sanitize_statcast_columns(data)
     return data
 @cache.df_cache()
-def statcast_batter_bat_tracking(year: int, minSwings: Union[int,str] = "q" ) -> pd.DataFrame:
+def statcast_batter_bat_tracking(year: int, minSwings: Union[int,str] = "q" ) -> pl.DataFrame:
     """
     Retrieves a player's bat tracking data for a given year.
 
@@ -105,6 +105,6 @@ def statcast_batter_bat_tracking(year: int, minSwings: Union[int,str] = "q" ) ->
     """
     url = f"https://baseballsavant.mlb.com/leaderboard/bat-tracking?attackZone=&batSide=&contactType=&count=&dateStart={year}-01-01&dateEnd={year}-12-31&gameType=&isHardHit=&minSwings={minSwings}&minGroupSwings=1&pitchHand=&pitchType=&seasonStart=&seasonEnd=&team=&type=batter&csv=true"
     res = requests.get(url, timeout=None).content
-    data = pd.read_csv(io.StringIO(res.decode('utf-8')))
+    data = pl.read_csv(io.StringIO(res.decode('utf-8')))
     data = sanitize_statcast_columns(data)
     return data

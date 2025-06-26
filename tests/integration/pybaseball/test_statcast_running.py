@@ -1,4 +1,4 @@
-import pandas as pd
+import polars as pl
 
 from pybaseball.statcast_running import (
 	statcast_sprint_speed,
@@ -7,7 +7,7 @@ from pybaseball.statcast_running import (
 	
 def test_statcast_sprint_speed() -> None:
 	min_opp = 10
-	result: pd.DataFrame = statcast_sprint_speed(2019, min_opp)
+	result: pl.DataFrame = statcast_sprint_speed(2019, min_opp)
 
 	assert result is not None
 	assert not result.empty
@@ -19,7 +19,7 @@ def test_statcast_sprint_speed() -> None:
 def test_statcast_running_splits() -> None:
 	min_opp = 5
 	raw_splits = True
-	result: pd.DataFrame = statcast_running_splits(2019, min_opp, raw_splits)
+	result: pl.DataFrame = statcast_running_splits(2019, min_opp, raw_splits)
 
 	assert result is not None
 	assert not result.empty

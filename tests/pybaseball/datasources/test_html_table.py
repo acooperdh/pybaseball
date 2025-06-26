@@ -2,7 +2,7 @@ from typing import Callable
 
 import lxml
 import numpy as np
-import pandas as pd
+import polars as pl
 import pytest
 
 from pybaseball.datasources.html_table_processor import HTMLTableProcessor
@@ -49,8 +49,8 @@ def sample_html() -> str:
 
 
 @pytest.fixture()
-def sample_processed_result() -> pd.DataFrame:
-    return pd.DataFrame(
+def sample_processed_result() -> pl.DataFrame:
+    return pl.DataFrame(
         [
             ['TBR', 1, 2, 0.50, 8, .6],
             ['NYY', 3.5, 4, 0.45, np.nan, .3]
@@ -69,17 +69,17 @@ def _html_table_processor() -> HTMLTableProcessor:
 
 class TestHTMLTableProcessor:
     def test_get_table_html(self, html_table_processor: HTMLTableProcessor, sample_html: str,
-                            sample_processed_result: pd.DataFrame) -> None:
+                            sample_processed_result: pl.DataFrame) -> None:
         actual_result = html_table_processor.get_tabular_data_from_html(
             sample_html,
             column_name_mapper=GenericColumnMapper().map_list,
             known_percentages=['Percentage']
         ).reset_index(drop=True)
 
-        pd.testing.assert_frame_equal(sample_processed_result, actual_result, check_dtype=False)
+        pl.testing.assert_frame_equal(sample_processed_result, actual_result, check_dtype=False)
 
     def test_get_table_element(self, html_table_processor: HTMLTableProcessor, sample_html: str,
-                               sample_processed_result: pd.DataFrame) -> None:
+                               sample_processed_result: pl.DataFrame) -> None:
         html_dom = lxml.etree.HTML(sample_html)
         actual_result = html_table_processor.get_tabular_data_from_element(
             html_dom,
@@ -87,9 +87,9 @@ class TestHTMLTableProcessor:
             known_percentages=['Percentage']
         ).reset_index(drop=True)
 
-        pd.testing.assert_frame_equal(sample_processed_result, actual_result, check_dtype=False)
+        pl.testing.assert_frame_equal(sample_processed_result, actual_result, check_dtype=False)
 
-    def test_get_table_url(self, html_table_processor: HTMLTableProcessor, sample_html: str, sample_processed_result: pd.DataFrame,
+    def test_get_table_url(self, html_table_processor: HTMLTableProcessor, sample_html: str, sample_processed_result: pl.DataFrame,
                            response_get_monkeypatch: Callable) -> None:
         response_get_monkeypatch(sample_html)
         actual_result = html_table_processor.get_tabular_data_from_url(
@@ -98,9 +98,9 @@ class TestHTMLTableProcessor:
             known_percentages=['Percentage']
         ).reset_index(drop=True)
 
-        pd.testing.assert_frame_equal(sample_processed_result, actual_result, check_dtype=False)
+        pl.testing.assert_frame_equal(sample_processed_result, actual_result, check_dtype=False)
 
-    def test_get_table_options(self, html_table_processor: HTMLTableProcessor, sample_html: str, sample_processed_result: pd.DataFrame,
+    def test_get_table_options(self, html_table_processor: HTMLTableProcessor, sample_html: str, sample_processed_result: pl.DataFrame,
                            response_get_monkeypatch: Callable) -> None:
         response_get_monkeypatch(sample_html)
         actual_result = html_table_processor.get_tabular_data_from_options(
@@ -110,4 +110,4 @@ class TestHTMLTableProcessor:
             known_percentages=['Percentage']
         ).reset_index(drop=True)
 
-        pd.testing.assert_frame_equal(sample_processed_result, actual_result, check_dtype=False)
+        pl.testing.assert_frame_equal(sample_processed_result, actual_result, check_dtype=False)

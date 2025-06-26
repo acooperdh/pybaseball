@@ -1,6 +1,6 @@
 from typing import List, Tuple
 
-import pandas as pd
+import polars as pl
 
 from pybaseball.datahelpers.postprocessing import aggregate_by_season, augment_lahman_batting
 from pybaseball.lahman import batting
@@ -30,10 +30,10 @@ class MarcelProjectionsBatting(MarcelsProjectionsBase):
     REQUIRED_COLUMNS: List[str] = ["AB", "BB"]
     PLAYING_TIME_COLUMN: str = "PA"
 
-    def _load_data(self) -> pd.DataFrame:
+    def _load_data(self) -> pl.DataFrame:
         return batting()
 
-    def preprocess_data(self, stats_df: pd.DataFrame) -> pd.DataFrame:
+    def preprocess_data(self, stats_df: pl.DataFrame) -> pl.DataFrame:
         """
         preprocesses the data.
         :param stats_df: a data frame like Lahman batting
@@ -41,7 +41,7 @@ class MarcelProjectionsBatting(MarcelsProjectionsBase):
         """
         return aggregate_by_season(augment_lahman_batting(stats_df))
 
-    def filter_non_representative_data(self, stats_df: pd.DataFrame, primary_pos_df: pd.DataFrame) -> pd.DataFrame:
+    def filter_non_representative_data(self, stats_df: pl.DataFrame, primary_pos_df: pl.DataFrame) -> pl.DataFrame:
         """
         filters pitchers-as-batters. primary_pos_df is a data frame
         containing playerID, yearID, and primaryPos

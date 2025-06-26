@@ -4,14 +4,14 @@ import os
 from typing import Any, Callable, Optional
 from unittest.mock import MagicMock
 
-import pandas as pd
+import polars as pl
 import pytest
 
 from pybaseball import cache
 
 CURRENT_SC_COLUMNS = 92
 
-_DataFrameComparer = Callable[[pd.DataFrame, pd.DataFrame], bool]
+_DataFrameComparer = Callable[[pl.DataFrame, pl.DataFrame], bool]
 
 
 @pytest.fixture(name='logging_side_effect')
@@ -65,7 +65,7 @@ def _override_cache_config(cache_config: cache.CacheConfig) -> None:
 def _assert_frame_not_equal() -> _DataFrameComparer:
     def _assert(*args: Any, **kwargs: Any) -> bool:
         try:
-            pd.testing.assert_frame_equal(*args, **kwargs)
+            pl.testing.assert_frame_equal(*args, **kwargs)
         except AssertionError:
             # frames are not equal
             return True

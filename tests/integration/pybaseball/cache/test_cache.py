@@ -2,7 +2,7 @@ from os import path
 from typing import Callable
 from unittest.mock import patch
 
-import pandas as pd
+import polars as pl
 import pytest
 import requests
 from _pytest.monkeypatch import MonkeyPatch
@@ -28,7 +28,7 @@ def test_cache(monkeypatch: MonkeyPatch, cache_type: str, thrower: Callable) -> 
         # Cached read
         result2 = pybaseball.batting_stats(2019)  # type: ignore
 
-        pd.testing.assert_frame_equal(result, result2)
+        pl.testing.assert_frame_equal(result, result2)
 
         # Cleanup
         pybaseball.cache.purge()

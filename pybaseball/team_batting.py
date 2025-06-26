@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-import pandas as pd
+import polars as pl
 from bs4 import BeautifulSoup
 
 from . import cache
@@ -14,7 +14,7 @@ team_batting = fg_team_batting_data
 
 
 @cache.df_cache()
-def team_batting_bref(team: str, start_season: int, end_season: Optional[int]=None) -> pd.DataFrame:
+def team_batting_bref(team: str, start_season: int, end_season: Optional[int]=None) -> pl.DataFrame:
     """
     Get season-level Batting Statistics for Specific Team (from Baseball-Reference)
 
@@ -56,7 +56,7 @@ def team_batting_bref(team: str, start_season: int, end_season: Optional[int]=No
 
     assert headings is not None
     headings.insert(2, "Year")
-    data = pd.DataFrame(data=raw_data, columns=headings) # [:-5]  # -5 to remove Team Totals and other rows
+    data = pl.DataFrame(data=raw_data, columns=headings) # [:-5]  # -5 to remove Team Totals and other rows
     data = data.dropna()  # Removes Row of All Nones
 
     return data

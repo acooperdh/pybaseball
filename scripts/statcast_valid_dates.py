@@ -2,7 +2,7 @@ import argparse
 import os
 from datetime import date
 import multiprocessing
-import pandas as pd
+import polars as pl
 from pybaseball.utils import date_range
 from pybaseball import statcast
 
@@ -51,8 +51,8 @@ def get_date_records(dates):
 
 
 def update_date_records(date_records):
-    res_df = pd.DataFrame(date_records).rename({0: "date", 1: "num_records"}, axis=1)
-    return pd.concat((cache, res_df), axis=0)
+    res_df = pl.DataFrame(date_records).rename({0: "date", 1: "num_records"}, axis=1)
+    return pl.concat((cache, res_df), axis=0)
 
 
 def save_records(records):
@@ -60,7 +60,7 @@ def save_records(records):
 
 
 def get_rolling_counts(df, lag):
-    return pd.concat(
+    return pl.concat(
         (df, df.rolling(lag).sum().rename({"num_records": "rolling_counts"}, axis=1)),
         axis=1,
     )
@@ -80,7 +80,7 @@ def analyze_records(records):
         )
         print(ana_df.head(1))
 
-    records = records.assign(year=lambda row: pd.to_datetime(row.date).dt.year)
+    records = records.assign(year=lambda row: pl.to_datetime(row.date).dt.year)
     result = (
         records.query("num_records > 0").groupby("year").agg({"date": ["min", "max"]})
     )
@@ -101,6 +101,6 @@ def main():
 
 if __name__ == "__main__":
     initialize_file()
-    cache = pd.read_csv(RESULTS_FILE)
+    cache = pl.read_csv(RESULTS_FILE)
     already_done = set(cache.date)
     main()

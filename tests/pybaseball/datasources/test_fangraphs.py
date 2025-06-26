@@ -3,7 +3,7 @@ import urllib.parse
 from typing import Callable
 
 import numpy as np
-import pandas as pd
+import polars as pl
 import pytest
 
 from pybaseball.datasources.fangraphs import (_FG_LEADERS_URL, MAX_AGE, MIN_AGE, fg_batting_data, fg_pitching_data,
@@ -17,7 +17,7 @@ def _test_batting_stats_html(get_data_file_contents: Callable[[str], str]) -> st
 
 
 @pytest.fixture(name="test_batting_stats_result")
-def _test_batting_stats_result(get_data_file_dataframe: GetDataFrameCallable) -> pd.DataFrame:
+def _test_batting_stats_result(get_data_file_dataframe: GetDataFrameCallable) -> pl.DataFrame:
     return get_data_file_dataframe('batting_leaders.csv')
 
 
@@ -27,7 +27,7 @@ def _test_pitching_stats_html(get_data_file_contents: Callable[[str], str]) -> s
 
 
 @pytest.fixture(name="test_pitching_stats_result")
-def _test_pitching_stats_result(get_data_file_dataframe: GetDataFrameCallable) -> pd.DataFrame:
+def _test_pitching_stats_result(get_data_file_dataframe: GetDataFrameCallable) -> pl.DataFrame:
     return get_data_file_dataframe('pitching_leaders.csv')
 
 
@@ -37,7 +37,7 @@ def _test_team_batting_html(get_data_file_contents: Callable[[str], str]) -> str
 
 
 @pytest.fixture(name="test_team_batting_result")
-def _test_team_batting_result(get_data_file_dataframe: GetDataFrameCallable) -> pd.DataFrame:
+def _test_team_batting_result(get_data_file_dataframe: GetDataFrameCallable) -> pl.DataFrame:
     return get_data_file_dataframe('team_batting.csv')
 
     
@@ -47,7 +47,7 @@ def _test_team_fielding_html(get_data_file_contents: Callable[[str], str]) -> st
 
 
 @pytest.fixture(name="test_team_fielding_result")
-def _test_team_fielding_result(get_data_file_dataframe: GetDataFrameCallable) -> pd.DataFrame:
+def _test_team_fielding_result(get_data_file_dataframe: GetDataFrameCallable) -> pl.DataFrame:
     return get_data_file_dataframe('team_fielding.csv')
 
 
@@ -57,13 +57,13 @@ def _test_team_pitching_html(get_data_file_contents: Callable[[str], str]) -> st
 
 
 @pytest.fixture(name="test_team_pitching_result")
-def _test_team_pitching_result(get_data_file_dataframe: GetDataFrameCallable) -> pd.DataFrame:
+def _test_team_pitching_result(get_data_file_dataframe: GetDataFrameCallable) -> pl.DataFrame:
     return get_data_file_dataframe('team_pitching.csv')
 
 
 class TestDatasourceFangraphs:
     def test_batting_stats(self, response_get_monkeypatch: Callable, test_batting_stats_html: str,
-                           test_batting_stats_result: pd.DataFrame) -> None:
+                           test_batting_stats_result: pl.DataFrame) -> None:
         season = 2019
 
         query_params = urllib.parse.urlencode(
@@ -93,9 +93,9 @@ class TestDatasourceFangraphs:
 
         batting_stats_result = fg_batting_data(season).reset_index(drop=True)
 
-        pd.testing.assert_frame_equal(batting_stats_result, test_batting_stats_result, check_dtype=False)
+        pl.testing.assert_frame_equal(batting_stats_result, test_batting_stats_result, check_dtype=False)
     def test_batting_stats_custom_types(self, response_get_monkeypatch: Callable, test_batting_stats_html: str,
-                           test_batting_stats_result: pd.DataFrame) -> None:
+                           test_batting_stats_result: pl.DataFrame) -> None:
         season = 2019
 
         query_params = urllib.parse.urlencode(
@@ -125,10 +125,10 @@ class TestDatasourceFangraphs:
 
         batting_stats_result = fg_batting_data(season, stat_columns='WAR').reset_index(drop=True)
 
-        pd.testing.assert_frame_equal(batting_stats_result, test_batting_stats_result, check_dtype=False)
+        pl.testing.assert_frame_equal(batting_stats_result, test_batting_stats_result, check_dtype=False)
 
     def test_pitching_stats(self, response_get_monkeypatch: Callable, test_pitching_stats_html: str,
-                            test_pitching_stats_result: pd.DataFrame) -> None:
+                            test_pitching_stats_result: pl.DataFrame) -> None:
         season = 2019
 
         query_params = urllib.parse.urlencode(
@@ -158,10 +158,10 @@ class TestDatasourceFangraphs:
 
         pitching_stats_result = fg_pitching_data(season).reset_index(drop=True)
 
-        pd.testing.assert_frame_equal(pitching_stats_result, test_pitching_stats_result, check_dtype=False)
+        pl.testing.assert_frame_equal(pitching_stats_result, test_pitching_stats_result, check_dtype=False)
 
     def test_pitching_stats_custom_types(self, response_get_monkeypatch: Callable, test_pitching_stats_html: str,
-                            test_pitching_stats_result: pd.DataFrame) -> None:
+                            test_pitching_stats_result: pl.DataFrame) -> None:
         season = 2019
 
         query_params = urllib.parse.urlencode(
@@ -191,10 +191,10 @@ class TestDatasourceFangraphs:
 
         pitching_stats_result = fg_pitching_data(season, stat_columns='ERA_MINUS').reset_index(drop=True)
 
-        pd.testing.assert_frame_equal(pitching_stats_result, test_pitching_stats_result, check_dtype=False)
+        pl.testing.assert_frame_equal(pitching_stats_result, test_pitching_stats_result, check_dtype=False)
 
     def test_team_batting(self, response_get_monkeypatch: Callable, test_team_batting_html: str,
-                          test_team_batting_result: pd.DataFrame) -> None:
+                          test_team_batting_result: pl.DataFrame) -> None:
         season = 2019
 
         query_params = urllib.parse.urlencode(
@@ -224,10 +224,10 @@ class TestDatasourceFangraphs:
 
         team_batting_result = fg_team_batting_data(season).reset_index(drop=True)
 
-        pd.testing.assert_frame_equal(team_batting_result, test_team_batting_result, check_dtype=False)
+        pl.testing.assert_frame_equal(team_batting_result, test_team_batting_result, check_dtype=False)
 
     def test_team_batting_custom_types(self, response_get_monkeypatch: Callable, test_team_batting_html: str,
-                          test_team_batting_result: pd.DataFrame) -> None:
+                          test_team_batting_result: pl.DataFrame) -> None:
         season = 2019
 
         query_params = urllib.parse.urlencode(
@@ -257,11 +257,11 @@ class TestDatasourceFangraphs:
 
         team_batting_result = fg_team_batting_data(season, stat_columns='HOME_RUNS').reset_index(drop=True)
 
-        pd.testing.assert_frame_equal(team_batting_result, test_team_batting_result, check_dtype=False)
+        pl.testing.assert_frame_equal(team_batting_result, test_team_batting_result, check_dtype=False)
 
 
     def test_team_fielding(self, response_get_monkeypatch: Callable, test_team_fielding_html: str,
-                           test_team_fielding_result: pd.DataFrame) -> None:
+                           test_team_fielding_result: pl.DataFrame) -> None:
         season = 2019
 
         query_params = urllib.parse.urlencode(
@@ -291,11 +291,11 @@ class TestDatasourceFangraphs:
 
         team_fielding_result = fg_team_fielding_data(season).reset_index(drop=True)
 
-        pd.testing.assert_frame_equal(team_fielding_result, test_team_fielding_result, check_dtype=False)
+        pl.testing.assert_frame_equal(team_fielding_result, test_team_fielding_result, check_dtype=False)
 
 
     def test_team_fielding_custom_types(self, response_get_monkeypatch: Callable, test_team_fielding_html: str,
-                           test_team_fielding_result: pd.DataFrame) -> None:
+                           test_team_fielding_result: pl.DataFrame) -> None:
         season = 2019
 
         query_params = urllib.parse.urlencode(
@@ -325,11 +325,11 @@ class TestDatasourceFangraphs:
 
         team_fielding_result = fg_team_fielding_data(season, stat_columns='ULTIMATE_ZONE_RATING').reset_index(drop=True)
 
-        pd.testing.assert_frame_equal(team_fielding_result, test_team_fielding_result, check_dtype=False)
+        pl.testing.assert_frame_equal(team_fielding_result, test_team_fielding_result, check_dtype=False)
 
 
     def test_team_pitching(self, response_get_monkeypatch: Callable, test_team_pitching_html: str,
-                           test_team_pitching_result: pd.DataFrame) -> None:
+                           test_team_pitching_result: pl.DataFrame) -> None:
         season = 2019
 
         query_params = urllib.parse.urlencode(
@@ -358,11 +358,11 @@ class TestDatasourceFangraphs:
 
         team_pitching_result = fg_team_pitching_data(season).reset_index(drop=True)
 
-        pd.testing.assert_frame_equal(team_pitching_result, test_team_pitching_result, check_dtype=False)
+        pl.testing.assert_frame_equal(team_pitching_result, test_team_pitching_result, check_dtype=False)
 
 
     def test_team_pitching_custom_types(self, response_get_monkeypatch: Callable, test_team_pitching_html: str,
-                           test_team_pitching_result: pd.DataFrame) -> None:
+                           test_team_pitching_result: pl.DataFrame) -> None:
         season = 2019
 
         query_params = urllib.parse.urlencode(
@@ -391,4 +391,4 @@ class TestDatasourceFangraphs:
 
         team_pitching_result = fg_team_pitching_data(season, stat_columns='WINS').reset_index(drop=True)
 
-        pd.testing.assert_frame_equal(team_pitching_result, test_team_pitching_result, check_dtype=False)
+        pl.testing.assert_frame_equal(team_pitching_result, test_team_pitching_result, check_dtype=False)

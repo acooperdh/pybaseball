@@ -6,7 +6,7 @@ from typing import Dict, List, Optional, Set
 from datetime import date
 
 import numpy as np
-import pandas as pd
+import polars as pl
 
 from . import lahman
 from .datasources import fangraphs
@@ -18,11 +18,11 @@ logger = logging.getLogger('pybaseball')
 logger.setLevel(LOG_LEVEL)
 
 
-def team_ids(season: Optional[int] = None, league: str = 'ALL') -> pd.DataFrame:
+def team_ids(season: Optional[int] = None, league: str = 'ALL') -> pl.DataFrame:
     if not os.path.exists(_DATA_FILENAME):
         _generate_teams()
 
-    fg_team_data = pd.read_csv(_DATA_FILENAME, index_col=0)
+    fg_team_data = pl.read_csv(_DATA_FILENAME, index_col=0)
 
     if season is not None:
         fg_team_data = fg_team_data.query(f"yearID == {season}")
@@ -39,7 +39,7 @@ def mlb_team_id(team_name):
     # were passed in, 112 should be returned. If not found, throw an error.
     #
     mlb_url_file_name = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data', 'mlb_url_team_ID.csv')
-    mlb_team_id_data = pd.read_csv(mlb_url_file_name, index_col=0)
+    mlb_team_id_data = pl.read_csv(mlb_url_file_name, index_col=0)
 
     # Sanitize the input - remove spaces, dashes and make lower case
     team_name = team_name.replace(" ", "").replace("-", "").lower()
@@ -95,7 +95,7 @@ def _front_loaded_ratio(str_1: str, str_2: str) -> float:
     return (full_score + front_score) / 2
 
 
-def _get_close_team_matches(lahman_row: pd.Series, fg_data: pd.DataFrame, min_score: int = 50) -> Optional[str]:
+def _get_close_team_matches(lahman_row: pl.Series, fg_data: pl.DataFrame, min_score: int = 50) -> Optional[str]:
     columns_to_check = ['franchID', 'teamID', 'teamIDBR', 'initials', 'city_start']
     best_of = 3
 
@@ -116,7 +116,7 @@ def _get_close_team_matches(lahman_row: pd.Series, fg_data: pd.DataFrame, min_sc
     return choice if score >= min_score else None
 
 
-def _generate_teams() -> pd.DataFrame:
+def _generate_teams() -> pl.DataFrame:
     """
     Creates a datafile with a map of Fangraphs team IDs to lahman data to be used by fangraphss_teams
 
@@ -161,7 +161,7 @@ def _generate_teams() -> pd.DataFrame:
 
     lahman_columns += ['city_start']
 
-    joined: pd.DataFrame = None
+    joined: pl.DataFrame = None
 
     for join_column in ['manual_teamid', 'teamID', 'franchID', 'teamIDBR', 'initials', 'city_start']:
         joined_count = len(joined.index) if (joined is not None) else 0
@@ -176,7 +176,7 @@ def _generate_teams() -> pd.DataFrame:
 
         # Clean up the data
         found = outer_joined.query("not Season.isnull() and not yearID.isnull()")
-        joined = pd.concat([joined, found]) if (joined is not None) else found
+        joined = pl.concat([joined, found]) if (joined is not None) else found
 
         # My kingdom for an xor function
         unjoined = outer_joined.query('yearID.isnull() or Season.isnull()')
@@ -199,7 +199,7 @@ def _generate_teams() -> pd.DataFrame:
                                                right_on=['Season', 'Team'])
 
     # Clean up the data
-    joined = pd.concat([joined, outer_joined.query("not Season.isnull() and not yearID.isnull()")])
+    joined = pl.concat([joined, outer_joined.query("not Season.isnull() and not yearID.isnull()")])
 
     unjoined = outer_joined.query('(yearID.isnull() or Season.isnull()) and not (yearID.isnull() and Season.isnull())')
 

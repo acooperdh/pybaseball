@@ -2,7 +2,7 @@ import io
 from datetime import date
 from typing import Optional
 
-import pandas as pd
+import polars as pl
 from bs4 import BeautifulSoup
 
 from . import cache
@@ -24,7 +24,7 @@ def get_soup(start_dt: date, end_dt: date) -> BeautifulSoup:
     return BeautifulSoup(s, features="lxml")
 
 
-def get_table(soup: BeautifulSoup) -> pd.DataFrame:
+def get_table(soup: BeautifulSoup) -> pl.DataFrame:
     table = soup.find_all('table')[0]
     data = []
     headings = [th.get_text() for th in table.find("tr").find_all("th")][1:]
@@ -35,17 +35,17 @@ def get_table(soup: BeautifulSoup) -> pd.DataFrame:
     for row in rows:
         cols = row.find_all('td')
         row_anchor = row.find("a")
-        mlbid = row_anchor["href"].split("mlb_ID=")[-1] if row_anchor else pd.NA  # ID str or nan
+        mlbid = row_anchor["href"].split("mlb_ID=")[-1] if row_anchor else pl.NA  # ID str or nan
         cols = [ele.text.strip() for ele in cols]
         cols.append(mlbid)
         data.append([ele for ele in cols])
-    df = pd.DataFrame(data)
+    df = pl.DataFrame(data)
     df = df.rename(columns=df.iloc[0])
     df = df.reindex(df.index.drop(0))
     return df
 
 
-def batting_stats_range(start_dt: Optional[str] = None, end_dt: Optional[str] = None) -> pd.DataFrame:
+def batting_stats_range(start_dt: Optional[str] = None, end_dt: Optional[str] = None) -> pl.DataFrame:
     """
     Get all batting stats for a set time range. This can be the past week, the
     month of August, anything. Just supply the start and end date in YYYY-MM-DD
@@ -67,14 +67,14 @@ def batting_stats_range(start_dt: Optional[str] = None, end_dt: Optional[str] = 
                     'HR', 'RBI', 'BB', 'IBB', 'SO', 'HBP', 'SH', 'SF', 'GDP',
                     'SB', 'CS', 'BA', 'OBP', 'SLG', 'OPS', 'mlbID']:
         #table[column] = table[column].astype('float')
-        table[column] = pd.to_numeric(table[column])
+        table[column] = pl.to_numeric(table[column])
         #table['column'] = table['column'].convert_objects(convert_numeric=True)
     table = table.drop('', axis=1)
     return table
 
 
 @cache.df_cache()
-def batting_stats_bref(season: Optional[int] = None) -> pd.DataFrame:
+def batting_stats_bref(season: Optional[int] = None) -> pl.DataFrame:
     """
     Get all batting stats for a set season. If no argument is supplied, gives
     stats for current season to date.
@@ -87,14 +87,14 @@ def batting_stats_bref(season: Optional[int] = None) -> pd.DataFrame:
 
 
 @cache.df_cache()
-def bwar_bat(return_all: bool = False) -> pd.DataFrame:
+def bwar_bat(return_all: bool = False) -> pl.DataFrame:
     """
     Get data from war_daily_bat table. Returns WAR, its components, and a few other useful stats.
     To get all fields from this table, supply argument return_all=True.
     """
     url = "http://www.baseball-reference.com/data/war_daily_bat.txt"
     s = session.get(url).content
-    c=pd.read_csv(io.StringIO(s.decode('utf-8')))
+    c=pl.read_csv(io.StringIO(s.decode('utf-8')))
     if return_all:
         return c
     else:

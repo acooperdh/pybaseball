@@ -3,7 +3,7 @@ from typing import Tuple
 
 import attr
 import numpy as np
-import pandas as pd
+import polars as pl
 from scipy.integrate import RK45
 
 from pybaseball.analysis.trajectories.unit_conversions import RPM_TO_RAD_SEC
@@ -109,7 +109,7 @@ class BattedBallTrajectory:
         initial_spin: float,
         spin_angle: float,
         delta_time: float = 0.01,
-    ) -> pd.DataFrame:
+    ) -> pl.DataFrame:
         # TODO: make the return value a trajectory object
         """
         computes a batted ball trajectory. speed is in miles-per-hour,
@@ -155,8 +155,8 @@ class BattedBallTrajectory:
             res = rk_solution.y
             z = res[2]
             ans.append([rk_solution.t] + list(res))
-        result_df = pd.DataFrame(np.array(ans).reshape(-1, 7))
-        result_df.columns = pd.Index(["t", "x", "y", "z", "vx", "vy", "vz"])
+        result_df = pl.DataFrame(np.array(ans).reshape(-1, 7))
+        result_df.columns = pl.Index(["t", "x", "y", "z", "vx", "vy", "vz"])
 
         return result_df
 

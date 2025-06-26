@@ -8,7 +8,7 @@ Excel Workbook: http://baseball.physics.illinois.edu/trackman/MovementSpinEffici
 """
 
 from pybaseball import statcast_pitcher
-import pandas as pd
+import polars as pl
 import numpy as np
 
 K = .005383  # Environmental Constant
@@ -48,7 +48,7 @@ def statcast_pitcher_spin(start_dt=None, end_dt=None, player_id=None):
     return pitcher_data
 
 # def get_statcast_pither_test_data():
-# 	df = pd.read_csv("tests/statcast_pitching_test_data.csv")
+# 	df = pl.read_csv("tests/statcast_pitching_test_data.csv")
 # 	return df
 
 
@@ -197,10 +197,10 @@ def time_duration(s, v, acc, adj, forward):
         Direction does not affect the time duration. It helps assign a positive or negative
         value to the flight time.
 
-        s = (pd.Series) spacial point at known time
-        v = (pd.Series) velocity at known time
-        acc = (pd.Series) acceleration
-        adj = (pd.Series) spatial difference between known and unknown points
+        s = (pl.Series) spacial point at known time
+        v = (pl.Series) velocity at known time
+        acc = (pl.Series) acceleration
+        adj = (pl.Series) spatial difference between known and unknown points
         forward = (bool) indicating whether space_diff is in the positive or negative y direction
     """
     return (-v - np.sqrt(v**2 - 2*acc*((1 if forward else -1) * (s-adj)))) / acc

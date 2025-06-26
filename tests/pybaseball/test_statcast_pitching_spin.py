@@ -1,7 +1,7 @@
 import pybaseball.statcast_pitcher_spin as spin
 import unittest
 import pytest
-import pandas as pd
+import polars as pl
 from typing import Callable
 from pandas.testing import assert_frame_equal
 import logging
@@ -10,11 +10,11 @@ rounding_error_columns = ['vxR', 'vyR', 'vxbar', 'vybar', 'vbar']
 
 
 @pytest.fixture(name="target_frame")
-def _target_data(get_data_file_dataframe: Callable) -> pd.DataFrame:
+def _target_data(get_data_file_dataframe: Callable) -> pl.DataFrame:
     return get_data_file_dataframe('statcast_target_data.csv')
 
 @pytest.fixture(name="test_frame")
-def _test_data(get_data_file_dataframe: Callable) -> pd.DataFrame:
+def _test_data(get_data_file_dataframe: Callable) -> pl.DataFrame:
     return get_data_file_dataframe('statcast_test_data.csv')
 
 # Test Methods
@@ -61,7 +61,7 @@ def _sample_data(get_data_file_contents: Callable) -> str:
     return get_data_file_contents('raw_darvish_data.csv')
 
 @pytest.fixture(name="sample_processed_result")
-def _sample_processed_result(get_data_file_dataframe: Callable) -> pd.DataFrame:
+def _sample_processed_result(get_data_file_dataframe: Callable) -> pl.DataFrame:
     return get_data_file_dataframe('processed_darvish_data.csv')
 def test_full_function(response_get_monkeypatch, sample_data, sample_processed_result):
     """

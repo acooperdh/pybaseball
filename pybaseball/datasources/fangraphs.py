@@ -2,7 +2,7 @@ from abc import ABC
 from typing import Any, List, Optional, Union
 
 import lxml
-import pandas as pd
+import polars as pl
 
 from .. import cache
 from ..datahelpers.column_mapper import BattingStatsColumnMapper, ColumnListMapperFunction, GenericColumnMapper
@@ -60,24 +60,24 @@ class FangraphsDataTable(ABC):
             table_class=self.TABLE_CLASS,
         )
 
-    def _postprocess(self, data: pd.DataFrame) -> pd.DataFrame:
+    def _postprocess(self, data: pl.DataFrame) -> pl.DataFrame:
         return data
 
-    def _sort(self, data: pd.DataFrame, columns: List[str], ascending: bool = True) -> pd.DataFrame:
+    def _sort(self, data: pl.DataFrame, columns: List[str], ascending: bool = True) -> pl.DataFrame:
         known_columns = [x for x in columns if x in data.columns]
         if known_columns == []:
             return data
 
         return data.sort_values(columns, ascending=ascending)
 
-    def _validate(self, data: pd.DataFrame) -> pd.DataFrame:
+    def _validate(self, data: pl.DataFrame) -> pl.DataFrame:
         return data
 
     def fetch(self, start_season: int, end_season: Optional[int] = None, league: str = 'ALL', ind: int = 1,
               stat_columns: Union[str, List[str]] = 'ALL', qual: Optional[int] = None, split_seasons: bool = True,
               month: str = 'ALL', on_active_roster: bool = False, minimum_age: int = MIN_AGE,
               maximum_age: int = MAX_AGE, team: str = '', _filter: str = '', players: str = '',
-              position: str = 'ALL', max_results: int = 1000000,) -> pd.DataFrame:
+              position: str = 'ALL', max_results: int = 1000000,) -> pl.DataFrame:
 
         """
         Get leaderboard data from Fangraphs.
@@ -175,7 +175,7 @@ class FangraphsBattingStatsTable(FangraphsDataTable):
     def fetch(self, *args, **kwargs):
         return super().fetch(*args, **kwargs)
 
-    def _postprocess(self, data: pd.DataFrame) -> pd.DataFrame:
+    def _postprocess(self, data: pl.DataFrame) -> pl.DataFrame:
         return self._sort(data, ["WAR", "OPS"], ascending=False)
 
 class FangraphsFieldingStatsTable(FangraphsDataTable):
@@ -189,7 +189,7 @@ class FangraphsFieldingStatsTable(FangraphsDataTable):
     def fetch(self, *args, **kwargs):
         return super().fetch(*args, **kwargs)
 
-    def _postprocess(self, data: pd.DataFrame) -> pd.DataFrame:
+    def _postprocess(self, data: pl.DataFrame) -> pl.DataFrame:
         return self._sort(data, ["DEF"], ascending=False)
 
 class FangraphsPitchingStatsTable(FangraphsDataTable):
@@ -202,7 +202,7 @@ class FangraphsPitchingStatsTable(FangraphsDataTable):
     def fetch(self, *args, **kwargs):
         return super().fetch(*args, **kwargs)
 
-    def _postprocess(self, data: pd.DataFrame) -> pd.DataFrame:
+    def _postprocess(self, data: pl.DataFrame) -> pl.DataFrame:
         if "WAR" in data.columns:
             new_position = min(7, len(data.columns) - 1)
             columns = data.columns.tolist()
