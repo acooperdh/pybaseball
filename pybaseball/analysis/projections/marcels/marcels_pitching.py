@@ -1,7 +1,7 @@
 from typing import List, Tuple
 
 import numpy as np
-import pandas as pd
+import polars as pl
 
 from pybaseball.datahelpers.postprocessing import aggregate_by_season, augment_lahman_pitching
 from pybaseball.lahman import pitching
@@ -18,10 +18,10 @@ class MarcelProjectionsPitching(MarcelsProjectionsBase):
     REQUIRED_COLUMNS: List[str] = ["IPouts"]
     PLAYING_TIME_COLUMN: str = "IPouts"
 
-    def _load_data(self) -> pd.DataFrame:
+    def _load_data(self) -> pl.DataFrame:
         return pitching()
 
-    def preprocess_data(self, stats_df: pd.DataFrame) -> pd.DataFrame:
+    def preprocess_data(self, stats_df: pl.DataFrame) -> pl.DataFrame:
         """
         preprocesses the data.
         :param stats_df: data frame like Lahman pitching
@@ -29,7 +29,7 @@ class MarcelProjectionsPitching(MarcelsProjectionsBase):
         """
         return aggregate_by_season(augment_lahman_pitching(stats_df))
 
-    def filter_non_representative_data(self, stats_df: pd.DataFrame, primary_pos_df: pd.DataFrame) -> pd.DataFrame:
+    def filter_non_representative_data(self, stats_df: pl.DataFrame, primary_pos_df: pl.DataFrame) -> pl.DataFrame:
         """
         filter batters-as-pitchers. primary_pos_df is a data frame
         containing playerID, yearID, and primaryPos
@@ -44,7 +44,7 @@ class MarcelProjectionsPitching(MarcelsProjectionsBase):
             .drop("primaryPos", axis=1)
         )
 
-    def get_num_regression_pt(self, stats_df: pd.DataFrame) -> np.ndarray:
+    def get_num_regression_pt(self, stats_df: pl.DataFrame) -> np.ndarray:
         """
         gets the number of batters-faced for the regression component.
         computed as a function of fraction of games as a starter.

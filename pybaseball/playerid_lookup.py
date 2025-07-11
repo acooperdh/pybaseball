@@ -6,7 +6,7 @@ import zipfile
 
 from typing import List, Tuple, Iterable
 
-import pandas as pd
+import polars as pl
 import requests
 
 from . import cache
@@ -29,23 +29,23 @@ def _extract_people_files(zip_archive: zipfile.ZipFile) -> Iterable[zipfile.ZipI
     )
 
 
-def _extract_people_table(zip_archive: zipfile.ZipFile) -> pd.DataFrame:
+def _extract_people_table(zip_archive: zipfile.ZipFile) -> pl.DataFrame:
     dfs = map(
-        lambda zip_info: pd.read_csv(
+        lambda zip_info: pl.read_csv(
             io.BytesIO(zip_archive.read(zip_info.filename)),
             low_memory=False
         ),
         _extract_people_files(zip_archive),
     )
-    return pd.concat(dfs, axis=0)
+    return pl.concat(dfs, axis=0)
 
 
 @cache.df_cache()
-def chadwick_register(save: bool = False) -> pd.DataFrame:
+def chadwick_register(save: bool = False) -> pl.DataFrame:
     ''' Get the Chadwick register Database '''
 
     if os.path.exists(get_register_file()):
-        table = pd.read_csv(get_register_file())
+        table = pl.read_csv(get_register_file())
         return table
 
     print('Gathering player lookup table. This may take a moment.')
@@ -80,19 +80,19 @@ def get_lookup_table(save=False):
     return table
 
 
-def get_closest_names(last: str, first: str, player_table: pd.DataFrame) -> pd.DataFrame:
+def get_closest_names(last: str, first: str, player_table: pl.DataFrame) -> pl.DataFrame:
     """Calculates similarity of first and last name provided with all players in player_table
 
     Args:
         last (str): Provided last name
         first (str): Provided first name
-        player_table (pd.DataFrame): Chadwick player table including names
+        player_table (pl.DataFrame): Chadwick player table including names
 
     Returns:
-        pd.DataFrame: 5 nearest matches from difflib.get_close_matches
+        pl.DataFrame: 5 nearest matches from difflib.get_close_matches
     """
     filled_df = player_table.fillna("").assign(chadwick_name=lambda row: row.name_first + " " + row.name_last)
-    fuzzy_matches = pd.DataFrame(
+    fuzzy_matches = pl.DataFrame(
         get_close_matches(f"{first} {last}", filled_df.chadwick_name, n=5, cutoff=0)
     ).rename({0: "chadwick_name"}, axis=1)
     return fuzzy_matches.merge(filled_df, on="chadwick_name").drop("chadwick_name", axis=1)
@@ -102,7 +102,7 @@ class _PlayerSearchClient:
     def __init__(self) -> None:
         self.table = get_lookup_table()
 
-    def search(self, last: str, first: str = None, fuzzy: bool = False, ignore_accents: bool = False) -> pd.DataFrame:
+    def search(self, last: str, first: str = None, fuzzy: bool = False, ignore_accents: bool = False) -> pl.DataFrame:
         """Lookup playerIDs (MLB AM, bbref, retrosheet, FG) for a given player
 
         Args:
@@ -112,7 +112,7 @@ class _PlayerSearchClient:
             ignore_accents (bool, optional): Normalizes accented letters. Defaults to False
 
         Returns:
-            pd.DataFrame: DataFrame of playerIDs, name, years played
+            pl.DataFrame: DataFrame of playerIDs, name, years played
         """
 
         # force input strings to lowercase
@@ -141,7 +141,7 @@ class _PlayerSearchClient:
         return results
 
 
-    def search_list(self, player_list: List[Tuple[str, str]]) -> pd.DataFrame:
+    def search_list(self, player_list: List[Tuple[str, str]]) -> pl.DataFrame:
         '''
         Lookup playerIDs (MLB AM, bbref, retrosheet, FG) for a list of players.
 
@@ -149,9 +149,9 @@ class _PlayerSearchClient:
             player_list: List of (last, first) tupels.
 
         Returns:
-            pd.DataFrame: DataFrame of playerIDs, name, years played
+            pl.DataFrame: DataFrame of playerIDs, name, years played
         ''' 
-        results = pd.DataFrame()
+        results = pl.DataFrame()
 
         for last, first in player_list:
             results = results.append(self.search(last, first), ignore_index=True)
@@ -159,7 +159,7 @@ class _PlayerSearchClient:
         return results
 
 
-    def reverse_lookup(self, player_ids: List[str], key_type: str = 'mlbam') -> pd.DataFrame:
+    def reverse_lookup(self, player_ids: List[str], key_type: str = 'mlbam') -> pl.DataFrame:
         """Retrieve a table of player information given a list of player ids
 
         :param player_ids: list of player ids
@@ -193,7 +193,7 @@ def _get_client() -> _PlayerSearchClient:
         _client = _PlayerSearchClient()
     return _client
 
-def playerid_lookup(last: str, first: str = None, fuzzy: bool = False, ignore_accents: bool = False) -> pd.DataFrame:
+def playerid_lookup(last: str, first: str = None, fuzzy: bool = False, ignore_accents: bool = False) -> pl.DataFrame:
     """Lookup playerIDs (MLB AM, bbref, retrosheet, FG) for a given player
 
     Args:
@@ -203,12 +203,12 @@ def playerid_lookup(last: str, first: str = None, fuzzy: bool = False, ignore_ac
         ignore_accents (bool, optional): Normalizes accented letters. Defaults to False
 
     Returns:
-        pd.DataFrame: DataFrame of playerIDs, name, years played
+        pl.DataFrame: DataFrame of playerIDs, name, years played
     """
     client = _get_client()
     return client.search(last, first, fuzzy, ignore_accents)
 
-def player_search_list(player_list: List[Tuple[str, str]]) -> pd.DataFrame:
+def player_search_list(player_list: List[Tuple[str, str]]) -> pl.DataFrame:
     '''
     Lookup playerIDs (MLB AM, bbref, retrosheet, FG) for a list of players.
 
@@ -216,12 +216,12 @@ def player_search_list(player_list: List[Tuple[str, str]]) -> pd.DataFrame:
         player_list: List of (last, first) tupels.
 
     Returns:
-        pd.DataFrame: DataFrame of playerIDs, name, years played
+        pl.DataFrame: DataFrame of playerIDs, name, years played
     ''' 
     client = _get_client()
     return client.search_list(player_list)
 
-def playerid_reverse_lookup(player_ids: List[str], key_type: str = 'mlbam') -> pd.DataFrame:
+def playerid_reverse_lookup(player_ids: List[str], key_type: str = 'mlbam') -> pl.DataFrame:
     """Retrieve a table of player information given a list of player ids
 
     :param player_ids: list of player ids

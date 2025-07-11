@@ -1,4 +1,4 @@
-import pandas as pd
+import polars as pl
 import pytest
 import warnings
 
@@ -71,7 +71,7 @@ def test_front_loaded_ratio(team1: str, team2: str, expected_ratio: int) -> None
             assert _front_loaded_ratio(team1, team2) == 0
 
 def test_get_close_team_matches() -> None:
-    lahman_teams = pd.DataFrame(
+    lahman_teams = pl.DataFrame(
         [
             {'yearID': 2020, 'franchID': 'ARI', 'teamID': 'ARI', 'teamIDBR': 'ARI', 'name': 'Arizona Diamondbacks', 'initials': 'AD', 'city_start': 'ARI', 'expected': 'ARI'},
             {'yearID': 2020, 'franchID': 'ATL', 'teamID': 'ATL', 'teamIDBR': 'ATL', 'name': 'Atlanta Braves', 'initials': 'AB', 'city_start': 'ATL', 'expected': 'ATL'},
@@ -106,7 +106,7 @@ def test_get_close_team_matches() -> None:
         ]
     )
 
-    fg_teams = pd.DataFrame([
+    fg_teams = pl.DataFrame([
         {'Season': 2020, 'Team': 'CHW'},
         {'Season': 2020, 'Team': 'SDP'},
         {'Season': 2020, 'Team': 'LAD'},

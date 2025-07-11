@@ -1,6 +1,6 @@
 from typing import Callable
 
-import pandas as pd
+import polars as pl
 import pytest
 
 from pybaseball.datasources.fangraphs import fg_pitching_data

@@ -3,7 +3,7 @@ from os import path
 from typing import Optional
 from zipfile import ZipFile
 
-import pandas as pd
+import polars as pl
 import requests
 
 from . import cache
@@ -34,10 +34,10 @@ def download_lahman():
         # this way we'll now start using the extracted zip directory
         # instead of the session ZipFile object
 
-def _get_file(tablename: str, quotechar: str = "'") -> pd.DataFrame:
+def _get_file(tablename: str, quotechar: str = "'") -> pl.DataFrame:
     z = get_lahman_zip()
     f = f'{base_string}/{tablename}'
-    data = pd.read_csv(
+    data = pl.read_csv(
         f"{path.join(cache.config.cache_directory, f)}" if z is None else z.open(f),
         header=0,
         sep=',',
@@ -47,90 +47,90 @@ def _get_file(tablename: str, quotechar: str = "'") -> pd.DataFrame:
 
 
 # do this for every table in the lahman db so they can exist as separate functions
-def parks() -> pd.DataFrame:
+def parks() -> pl.DataFrame:
     return _get_file('core/Parks.csv')
 
-def all_star_full() -> pd.DataFrame:
+def all_star_full() -> pl.DataFrame:
     return _get_file("core/AllstarFull.csv")
 
-def appearances() -> pd.DataFrame:
+def appearances() -> pl.DataFrame:
     return _get_file("core/Appearances.csv")
 
-def awards_managers() -> pd.DataFrame:
+def awards_managers() -> pl.DataFrame:
     return _get_file("contrib/AwardsManagers.csv")
 
-def awards_players() -> pd.DataFrame:
+def awards_players() -> pl.DataFrame:
     return _get_file("contrib/AwardsPlayers.csv")
 
-def awards_share_managers() -> pd.DataFrame:
+def awards_share_managers() -> pl.DataFrame:
     return _get_file("contrib/AwardsShareManagers.csv")
 
-def awards_share_players() -> pd.DataFrame:
+def awards_share_players() -> pl.DataFrame:
     return _get_file("contrib/AwardsSharePlayers.csv")
 
-def batting() -> pd.DataFrame:
+def batting() -> pl.DataFrame:
     return _get_file("core/Batting.csv")
 
-def batting_post() -> pd.DataFrame:
+def batting_post() -> pl.DataFrame:
     return _get_file("core/BattingPost.csv")
 
-def college_playing() -> pd.DataFrame:
+def college_playing() -> pl.DataFrame:
     return _get_file("contrib/CollegePlaying.csv")
 
-def fielding() -> pd.DataFrame:
+def fielding() -> pl.DataFrame:
     return _get_file("core/Fielding.csv")
 
-def fielding_of() -> pd.DataFrame:
+def fielding_of() -> pl.DataFrame:
     return _get_file("core/FieldingOF.csv")
 
-def fielding_of_split() -> pd.DataFrame:
+def fielding_of_split() -> pl.DataFrame:
     return _get_file("core/FieldingOFsplit.csv")
 
-def fielding_post() -> pd.DataFrame:
+def fielding_post() -> pl.DataFrame:
     return _get_file("core/FieldingPost.csv")
 
-def hall_of_fame() -> pd.DataFrame:
+def hall_of_fame() -> pl.DataFrame:
     return _get_file("contrib/HallOfFame.csv")
 
-def home_games() -> pd.DataFrame:
+def home_games() -> pl.DataFrame:
     return _get_file("core/HomeGames.csv")
 
-def managers() -> pd.DataFrame:
+def managers() -> pl.DataFrame:
     return _get_file("core/Managers.csv")
 
-def managers_half() -> pd.DataFrame:
+def managers_half() -> pl.DataFrame:
     return _get_file("core/ManagersHalf.csv")
 
-def master() -> pd.DataFrame:
+def master() -> pl.DataFrame:
     # Alias for people -- the new name for master
     return people()
 
-def people() -> pd.DataFrame:
+def people() -> pl.DataFrame:
     return _get_file("core/People.csv")
 
-def pitching() -> pd.DataFrame:
+def pitching() -> pl.DataFrame:
     return _get_file("core/Pitching.csv")
 
-def pitching_post() -> pd.DataFrame:
+def pitching_post() -> pl.DataFrame:
     return _get_file("core/PitchingPost.csv")
 
-def salaries() -> pd.DataFrame:
+def salaries() -> pl.DataFrame:
     return _get_file("contrib/Salaries.csv")
 
-def schools() -> pd.DataFrame:
+def schools() -> pl.DataFrame:
     return _get_file("contrib/Schools.csv", quotechar='"')  # different here bc of doublequotes used in some school names
 
-def series_post() -> pd.DataFrame:
+def series_post() -> pl.DataFrame:
     return _get_file("core/SeriesPost.csv")
 
-def teams_core() -> pd.DataFrame:
+def teams_core() -> pl.DataFrame:
     return _get_file("core/Teams.csv")
 
-def teams_upstream() -> pd.DataFrame:
+def teams_upstream() -> pl.DataFrame:
     return _get_file("upstream/Teams.csv") # manually maintained file
 
-def teams_franchises() -> pd.DataFrame:
+def teams_franchises() -> pl.DataFrame:
     return _get_file("core/TeamsFranchises.csv")
 
-def teams_half() -> pd.DataFrame:
+def teams_half() -> pl.DataFrame:
     return _get_file("core/TeamsHalf.csv")

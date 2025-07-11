@@ -1,6 +1,6 @@
 from typing import Callable
 
-import pandas as pd
+import polars as pl
 import pytest
 
 from pybaseball.statcast import _SC_SINGLE_GAME_REQUEST, statcast_single_game
@@ -16,14 +16,14 @@ def _single_game_raw(get_data_file_contents: Callable[[str], str]) -> str:
 
 
 @pytest.fixture(name="single_game")
-def _single_game(get_data_file_dataframe: GetDataFrameCallable) -> pd.DataFrame:
+def _single_game(get_data_file_dataframe: GetDataFrameCallable) -> pl.DataFrame:
     data = get_data_file_dataframe('single_game_request.csv', parse_dates=[2])
-    data[data.columns[2]].apply(pd.to_datetime, errors='ignore', format=DATE_FORMAT)
+    data[data.columns[2]].apply(pl.to_datetime, errors='ignore', format=DATE_FORMAT)
     return data
 
 
 def test_statcast_single_game_request(response_get_monkeypatch: Callable, single_game_raw: str,
-                                      single_game: pd.DataFrame) -> None:
+                                      single_game: pl.DataFrame) -> None:
     game_pk = '631614'
 
     response_get_monkeypatch(
@@ -33,4 +33,4 @@ def test_statcast_single_game_request(response_get_monkeypatch: Callable, single
 
     statcast_result = statcast_single_game(game_pk).reset_index(drop=True)
 
-    pd.testing.assert_frame_equal(statcast_result, single_game, check_dtype=False)
+    pl.testing.assert_frame_equal(statcast_result, single_game, check_dtype=False)

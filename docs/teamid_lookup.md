@@ -1,6 +1,6 @@
 # Team ID Lookup
 
-`team_ids(season: int, league: str) -> pd.DataFrame`
+`team_ids(season: int, league: str) -> pl.DataFrame`
 
 Return a mapping dataframe to map Fangraphs, Retrosheet, Baeball Reference, and Lahman team data.
 

@@ -1,7 +1,7 @@
 import warnings
 from typing import Optional
 
-import pandas as pd
+import polars as pl
 
 from .datasources.fangraphs import fg_batting_data
 

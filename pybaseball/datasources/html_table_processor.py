@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Any, Callable, Dict, List, Optional, Union
 
 import lxml.etree
-import pandas as pd
+import polars as pl
 import requests
 
 from ..datahelpers import postprocessing
@@ -27,7 +27,7 @@ class HTMLTableProcessor:
 
     def get_tabular_data_from_element(self, element: lxml.etree.Element, column_name_mapper: ColumnListMapperFunction = None,
                                       known_percentages: Optional[List[str]] = None, row_id_func: RowIdFunction = None,
-                                      row_id_name: Optional[str] = None) -> pd.DataFrame:
+                                      row_id_name: Optional[str] = None) -> pl.DataFrame:
         headings = element.xpath(self.headings_xpath)
 
         if column_name_mapper:
@@ -47,13 +47,13 @@ class HTMLTableProcessor:
             for index in range(len(data_rows_dom)):
                 data_rows[index].insert(0, row_id_func(data_rows_dom[index])) # type: ignore
 
-        fg_data = pd.DataFrame(data_rows, columns=headings)
+        fg_data = pl.DataFrame(data_rows, columns=headings)
 
         return fg_data
 
     def get_tabular_data_from_html(self, html: Union[str, bytes], column_name_mapper: ColumnListMapperFunction = None,
                                    known_percentages: Optional[List[str]] = None, row_id_func: RowIdFunction = None,
-                                      row_id_name: Optional[str] = None) -> pd.DataFrame:
+                                      row_id_name: Optional[str] = None) -> pl.DataFrame:
         html_dom = lxml.etree.HTML(html)
 
         return self.get_tabular_data_from_element(
@@ -67,7 +67,7 @@ class HTMLTableProcessor:
     def get_tabular_data_from_url(self, url: str, query_params: Dict[str, Union[str, int]] = None,
                                   column_name_mapper: ColumnListMapperFunction = None,
                                   known_percentages: Optional[List[str]] = None, row_id_func: RowIdFunction = None,
-                                      row_id_name: Optional[str] = None) -> pd.DataFrame:
+                                      row_id_name: Optional[str] = None) -> pl.DataFrame:
         response = requests.get(self.root_url + url, params=query_params)
 
         if response.status_code > 399:
@@ -86,7 +86,7 @@ class HTMLTableProcessor:
     def get_tabular_data_from_options(self, base_url: str, query_params: Dict[str, Union[str, int]],
                                       column_name_mapper: ColumnListMapperFunction = None,
                                       known_percentages: Optional[List[str]] = None, row_id_func: RowIdFunction = None,
-                                      row_id_name: Optional[str] = None) -> pd.DataFrame:
+                                      row_id_name: Optional[str] = None) -> pl.DataFrame:
         return self.get_tabular_data_from_url(
             base_url,
             query_params=query_params,

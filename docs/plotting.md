@@ -76,7 +76,7 @@ spraychart(sub_data, 'astros', title='Jose Altuve: May-June 2019')
 ```python
 votto_data = statcast_batter('2019-08-01', '2019-10-01', 458015)
 aquino_data = statcast_batter('2019-08-01', '2019-10-01', 606157)
-data = pd.concat([votto_data, aquino_data])
+data = pl.concat([votto_data, aquino_data])
 home_data = data[data['home_team'] == 'CIN']
 spraychart(home_data, 'reds', title='Joey Votto vs. Aristedes Aquino', colorby='player')
 ```
@@ -84,12 +84,12 @@ spraychart(home_data, 'reds', title='Joey Votto vs. Aristedes Aquino', colorby='
 
 ---
 
-`plot_bb_profile(df: pd.DataFrame, parameter: Optional[str] = "launch_angle")`
+`plot_bb_profile(df: pl.DataFrame, parameter: Optional[str] = "launch_angle")`
 
 Plots a given StatCast parameter split by bb type.
 
 ## Arguments
-df (pd.DataFrame): StatCast pd.DataFrame (retrieved through statcast, statcast_batter, etc)
+df (pl.DataFrame): StatCast pl.DataFrame (retrieved through statcast, statcast_batter, etc)
 
 parameter (Optional[str], optional): Parameter to plot. Defaults to "launch_angle".
 
@@ -132,7 +132,7 @@ plot_teams(data, "HR", "BB")
 ![Plot Teams_2023_BB/HR](images/plot_teams_example.png)
 
 ---
-`plot_strike_zone(data: pd.DataFrame, title: str = '', colorby: str = 'pitch_type', legend_title: str = '',
+`plot_strike_zone(data: pl.DataFrame, title: str = '', colorby: str = 'pitch_type', legend_title: str = '',
                      annotation: str = 'pitch_type', axis: Optional[axes.Axes] = None) -> axes.Axes:`
 
 ## Arguments

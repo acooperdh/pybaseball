@@ -2,7 +2,7 @@ import os
 from datetime import date, datetime, timedelta
 from typing import Any, Dict, Optional, Union, cast
 
-import pandas as pd
+import polars as pl
 
 from . import cache_config, dataframe_utils, file_utils
 
@@ -49,10 +49,10 @@ class CacheRecord:
     def expired(self) -> bool:
         return date.today() > self.expiration_date
 
-    def load_df(self) -> pd.DataFrame:
+    def load_df(self) -> pl.DataFrame:
         return dataframe_utils.load_df(self.data['dataframe'])
 
-    def save_df(self, df: pd.DataFrame) -> None:
+    def save_df(self, df: pl.DataFrame) -> None:
         dataframe_utils.save_df(df, self.data['dataframe'])
 
     def delete(self) -> None:

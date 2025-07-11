@@ -3,7 +3,7 @@ from typing import Optional
 
 from bs4 import BeautifulSoup
 import numpy as np
-import pandas as pd
+import polars as pl
 
 from pybaseball.utils import get_first_season, most_recent_season
 
@@ -23,7 +23,7 @@ def get_soup(season: Optional[int], team: str) -> BeautifulSoup:
     s = session.get(url).content
     return BeautifulSoup(s, "lxml")
 
-def get_table(soup: BeautifulSoup, team: str) -> pd.DataFrame:
+def get_table(soup: BeautifulSoup, team: str) -> pl.DataFrame:
     try:
         table = soup.find_all('table')[0]
     except:
@@ -68,14 +68,14 @@ def get_table(soup: BeautifulSoup, team: str) -> pd.DataFrame:
                 cols = [ele.text.strip() for ele in cols][0:5]
                 data.append([ele for ele in cols if ele])
     #convert to pandas dataframe. make first row the table's column names and reindex.
-    df = pd.DataFrame(data)
+    df = pl.DataFrame(data)
     df = df.rename(columns=df.iloc[0])
     df = df.reindex(df.index.drop(0))
     df = df.drop('', axis=1) #not a useful column
     df['Attendance'].replace(r'^Unknown$', np.nan, regex=True, inplace = True) # make this a NaN so the column can benumeric
     return df
 
-def process_win_streak(data: pd.DataFrame) -> pd.DataFrame:
+def process_win_streak(data: pl.DataFrame) -> pl.DataFrame:
     """
     Convert "+++"/"---" formatted win/loss streak column into a +/- integer column
     """
@@ -87,7 +87,7 @@ def process_win_streak(data: pd.DataFrame) -> pd.DataFrame:
         data = data.drop(columns="Streak2")
     return data
 
-def make_numeric(data: pd.DataFrame) -> pd.DataFrame:
+def make_numeric(data: pl.DataFrame) -> pl.DataFrame:
     # first remove commas from attendance values
     # skip if column is all NA (not sure if everyone kept records in the early days)
     if data['Attendance'].count() > 0:
@@ -102,7 +102,7 @@ def make_numeric(data: pd.DataFrame) -> pd.DataFrame:
     return data
 
 @cache.df_cache()
-def schedule_and_record(season: int, team: str) -> pd.DataFrame:
+def schedule_and_record(season: int, team: str) -> pl.DataFrame:
     """ 
     Retrieve a team's game-level results for a given season, including win/loss/tie result, score, attendance, 
     and winning/losing/saving pitcher. If the season is incomplete, it will provide scheduling information for 

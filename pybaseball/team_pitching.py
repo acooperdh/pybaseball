@@ -1,6 +1,6 @@
 from typing import List, Optional
 
-import pandas as pd
+import polars as pl
 from bs4 import BeautifulSoup
 
 from . import cache
@@ -14,7 +14,7 @@ team_pitching = fg_team_pitching_data
 
 
 @cache.df_cache()
-def team_pitching_bref(team: str, start_season: int, end_season: Optional[int]=None) -> pd.DataFrame:
+def team_pitching_bref(team: str, start_season: int, end_season: Optional[int]=None) -> pl.DataFrame:
     """
     Get season-level Pitching Statistics for Specific Team (from Baseball-Reference)
 
@@ -56,7 +56,7 @@ def team_pitching_bref(team: str, start_season: int, end_season: Optional[int]=N
 
     assert headings is not None
     headings.insert(2, "Year")
-    data = pd.DataFrame(data=raw_data, columns=headings) # [:-5]  # -5 to remove Team Totals and other rows (didn't work in multi-year queries)
+    data = pl.DataFrame(data=raw_data, columns=headings) # [:-5]  # -5 to remove Team Totals and other rows (didn't work in multi-year queries)
     data = data.dropna()  # Removes Row of All Nones
     data.reset_index(drop=True, inplace=True)  # Fixes index issue (Index was named 'W" for some reason)
 

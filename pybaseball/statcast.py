@@ -3,7 +3,7 @@ import warnings
 from datetime import date
 from typing import Optional, Union
 
-import pandas as pd
+import polars as pl
 from tqdm import tqdm
 
 import pybaseball.datasources.statcast as statcast_ds
@@ -20,7 +20,7 @@ class StatcastException(Exception):
     pass
 
 @cache.df_cache(expires=365)
-def _small_request(start_dt: date, end_dt: date, team: Optional[str] = None) -> pd.DataFrame:
+def _small_request(start_dt: date, end_dt: date, team: Optional[str] = None) -> pl.DataFrame:
     data = statcast_ds.get_statcast_data_from_csv_url(
         _SC_SMALL_REQUEST.format(start_dt=str(start_dt), end_dt=str(end_dt), team=team if team else '')
     )
@@ -51,7 +51,7 @@ def _check_warning(start_dt: date, end_dt: date) -> None:
 
 
 def _handle_request(start_dt: date, end_dt: date, step: int, verbose: bool,
-                    team: Optional[str] = None, parallel: bool = True) -> pd.DataFrame:
+                    team: Optional[str] = None, parallel: bool = True) -> pl.DataFrame:
     """
     Fulfill the request in sensible increments.
     """
@@ -82,18 +82,18 @@ def _handle_request(start_dt: date, end_dt: date, step: int, verbose: bool,
 
     # Concatenate all dataframes into final result set
     if dataframe_list:
-        final_data = pd.concat(dataframe_list, axis=0).convert_dtypes(convert_string=False)
+        final_data = pl.concat(dataframe_list, axis=0).convert_dtypes(convert_string=False)
         final_data = final_data.sort_values(
             ['game_date', 'game_pk', 'at_bat_number', 'pitch_number'],
             ascending=False
         )
     else:
-        final_data = pd.DataFrame()
+        final_data = pl.DataFrame()
     return final_data
 
 
 def statcast(start_dt: str = None, end_dt: str = None, team: str = None,
-             verbose: bool = True, parallel: bool = True) -> pd.DataFrame:
+             verbose: bool = True, parallel: bool = True) -> pl.DataFrame:
     """
     Pulls statcast play-level data from Baseball Savant for a given date range.
 
@@ -114,7 +114,7 @@ def statcast(start_dt: str = None, end_dt: str = None, team: str = None,
                            team=team, parallel=parallel)
 
 
-def statcast_single_game(game_pk: Union[str, int]) -> pd.DataFrame:
+def statcast_single_game(game_pk: Union[str, int]) -> pl.DataFrame:
     """
     Pulls statcast play-level data from Baseball Savant for a single game,
     identified by its MLB game ID (game_pk in statcast data)

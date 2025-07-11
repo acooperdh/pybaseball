@@ -5,7 +5,7 @@ import io
 from typing import Dict, Iterator, Optional, Tuple, Union
 import zipfile
 
-import pandas as pd
+import polars as pl
 import requests
 
 from . import cache
@@ -218,7 +218,7 @@ def statcast_date_range(start: date, stop: date, step: int, verbose: bool = True
 		low += timedelta(days=step)
 
 
-def sanitize_statcast_columns(df: pd.DataFrame) -> pd.DataFrame:
+def sanitize_statcast_columns(df: pl.DataFrame) -> pl.DataFrame:
 	'''
 	Creates uniform structure in Statcast column names
 	Removes leading whitespace in column names
@@ -273,7 +273,7 @@ def sanitize_input(start_dt: Optional[str], end_dt: Optional[str], player_id: Op
 
 
 @cache.df_cache()
-def split_request(start_dt: str, end_dt: str, player_id: int, url: str) -> pd.DataFrame:
+def split_request(start_dt: str, end_dt: str, player_id: int, url: str) -> pl.DataFrame:
 	"""
 	Splits Statcast queries to avoid request timeouts
 	"""
@@ -292,11 +292,11 @@ def split_request(start_dt: str, end_dt: str, player_id: int, url: str) -> pd.Da
 		end_str = next_dt.strftime('%Y-%m-%d')
 		# retrieve data
 		data = requests.get(url.format(start_str, end_str, player_id_str))
-		df = pd.read_csv(io.StringIO(data.text))
+		df = pl.read_csv(io.StringIO(data.text))
 		# add data to list and increment current dates
 		results.append(df)
 		current_dt = next_dt + timedelta(days=1)
-	return pd.concat(results)
+	return pl.concat(results)
 
 
 def get_zip_file(url: str) -> zipfile.ZipFile:
@@ -319,14 +319,14 @@ def get_text_file(url: str) -> str:
 	return text
 
 
-def flag_imputed_data(statcast_df: pd.DataFrame) -> pd.DataFrame:
+def flag_imputed_data(statcast_df: pl.DataFrame) -> pl.DataFrame:
 	"""Function to flag possibly imputed data as a result of no-nulls approach (see: https://tht.fangraphs.com/43416-2/)
 	   For derivation of values see pybaseball/EXAMPLES/imputed_derivation.ipynb
 	   Note that this imputation only occured with TrackMan, not present in Hawk-Eye data (beyond 2020)
 	Args:
-		statcast_df (pd.DataFrame): Dataframe loaded via statcast.py, statcast_batter.py, or statcast_pitcher.py
+		statcast_df (pl.DataFrame): Dataframe loaded via statcast.py, statcast_batter.py, or statcast_pitcher.py
 	Returns:
-		pd.DataFrame: Copy of original dataframe with "possible_imputation" flag
+		pl.DataFrame: Copy of original dataframe with "possible_imputation" flag
 	"""
 
 	ParameterSet = namedtuple('ParameterSet', ["ev", "angle", "bb_type"])
@@ -347,7 +347,7 @@ def flag_imputed_data(statcast_df: pd.DataFrame) -> pd.DataFrame:
 	impute_combinations.append(ParameterSet(ev=82.9, angle=-21.0, bb_type="ground_ball"))
 	impute_combinations.append(ParameterSet(ev=90.3, angle=-17.0, bb_type="ground_ball"))
 
-	df_imputations = pd.DataFrame(data=impute_combinations)
+	df_imputations = pl.DataFrame(data=impute_combinations)
 	df_imputations["possible_imputation"] = True
 	df_return = statcast_df.merge(df_imputations, how="left",
 								  left_on=["launch_speed", "launch_angle", "bb_type"],

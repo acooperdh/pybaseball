@@ -1,6 +1,6 @@
 from typing import Callable
 
-import pandas as pd
+import polars as pl
 import pytest
 from tests.pybaseball.conftest import GetDataFrameCallable
 
@@ -13,14 +13,14 @@ def _single_day_raw(get_data_file_contents: Callable[[str], str]) -> str:
 
 
 @pytest.fixture(name="single_day")
-def _single_day(get_data_file_dataframe: GetDataFrameCallable) -> pd.DataFrame:
+def _single_day(get_data_file_dataframe: GetDataFrameCallable) -> pl.DataFrame:
     return get_data_file_dataframe("statcast_batter_data.csv")
 
 
 def test_statcast_batter_input_handling(
     response_get_monkeypatch: Callable,
     single_day_raw: str,
-    single_day: pd.DataFrame,
+    single_day: pl.DataFrame,
 ) -> None:
     """
     Test whether `statcast_batter` correctly handles optional start and end dates.
@@ -31,7 +31,7 @@ def test_statcast_batter_input_handling(
         The response monkeypatch function
     single_day_raw : str
         The raw csv result from the request
-    single_day : pd.DataFrame
+    single_day : pl.DataFrame
         The processed DataFrame expected
     """
     pid = 116539  # Derek Jeter
@@ -41,7 +41,7 @@ def test_statcast_batter_input_handling(
     response_get_monkeypatch(single_day_raw, url_end)
 
     res = statcast_batter(start_dt=dt, player_id=pid)
-    pd.testing.assert_frame_equal(res, single_day, check_dtype=False)
+    pl.testing.assert_frame_equal(res, single_day, check_dtype=False)
 
     res = statcast_batter(end_dt=dt, player_id=pid)
-    pd.testing.assert_frame_equal(res, single_day, check_dtype=False)
+    pl.testing.assert_frame_equal(res, single_day, check_dtype=False)

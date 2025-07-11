@@ -4,7 +4,7 @@ Utility functions for additional calculations on StatCast DataFrames. Located in
 
 ## Functions
 
-`add_spray_angle(df: pd.DataFrame,  adjusted: Optional[bool] = False)`
+`add_spray_angle(df: pl.DataFrame,  adjusted: Optional[bool] = False)`
 
 Adds spray angle and adjusted spray angle to StatCast DataFrames
     - Spray angle is the raw left-right angle of the hit 
@@ -14,7 +14,7 @@ The formula to transform hit coordinates to spray angle used was obtained from [
 
 ### Arguments
 
-df (pd.DataFrame): StatCast pd.DataFrame (retrieved through statcast, statcast_batter, etc)
+df (pl.DataFrame): StatCast pl.DataFrame (retrieved through statcast, statcast_batter, etc)
 
 ### Example
 

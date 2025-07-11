@@ -1,16 +1,16 @@
 import numpy as np
-import pandas as pd
+import polars as pl
 
 
-def add_spray_angle(raw_df: pd.DataFrame, adjusted: bool = False) -> pd.DataFrame:
+def add_spray_angle(raw_df: pl.DataFrame, adjusted: bool = False) -> pl.DataFrame:
     """Adds spray angle and adjusted spray angle to StatCast DataFrames
     - Spray angle is the raw left-right angle of the hit
     - Adjusted spray angle flips the sign for left handed batters, making it a push/pull angle
 
     Args:
-        df (pd.DataFrame): StatCast pd.DataFrame (retrieved through statcast, statcast_batter, etc)
+        df (pl.DataFrame): StatCast pl.DataFrame (retrieved through statcast, statcast_batter, etc)
     Returns:
-        pd.DataFrame: Input dataframe with spray angle columns appended
+        pl.DataFrame: Input dataframe with spray angle columns appended
     """
 
     df = raw_df.copy()

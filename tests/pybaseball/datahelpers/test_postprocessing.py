@@ -1,15 +1,15 @@
 from datetime import datetime
 
 import numpy as np
-import pandas as pd
+import polars as pl
 import pytest
 
 from pybaseball.datahelpers import postprocessing
 
 
 @pytest.fixture(name='sample_unprocessed_result')
-def _sample_unprocessed_result() -> pd.DataFrame:
-    return pd.DataFrame(
+def _sample_unprocessed_result() -> pl.DataFrame:
+    return pl.DataFrame(
         [
             ['TBR', '1', '2', '50 %', '8'],
             ['555', '3', '4', '45%', 'null'],
@@ -61,11 +61,11 @@ def test_try_parse_percentage_column_known() -> None:
 
 
 def test_try_parse_null() -> None:
-    assert pd.isna(postprocessing.try_parse(None, 'runs'))
+    assert pl.isna(postprocessing.try_parse(None, 'runs'))
 
 
 def test_try_parse_dataframe() -> None:
-    raw_data = pd.DataFrame(
+    raw_data = pl.DataFrame(
         [
             ['1', 'TBR', '2019-01-01', '0.5', '40%', 8, '1048576'],
             ['2', 'NYY', '2019-02-01', '0.6', '20%', 'null', '4294967296'],
@@ -75,7 +75,7 @@ def test_try_parse_dataframe() -> None:
 
     processed_data = postprocessing.try_parse_dataframe(raw_data)
 
-    expected_data = pd.DataFrame(
+    expected_data = pl.DataFrame(
         [
             [1, 'TBR', np.datetime64('2019-01-01'), 0.5, 0.4, 8, 1048576],
             [2, 'NYY', np.datetime64('2019-02-01'), 0.6, 0.2, np.nan, 4294967296],
@@ -83,11 +83,11 @@ def test_try_parse_dataframe() -> None:
         columns=['id', 'team', 'dt', 'rate', 'chance', 'wins', 'long_number']
     ).convert_dtypes(convert_string=False)
 
-    pd.testing.assert_frame_equal(processed_data, expected_data, check_dtype=False)
+    pl.testing.assert_frame_equal(processed_data, expected_data, check_dtype=False)
 
 
-def test_coalesce_nulls(sample_unprocessed_result: pd.DataFrame) -> None:
-    expected_result = pd.DataFrame(
+def test_coalesce_nulls(sample_unprocessed_result: pl.DataFrame) -> None:
+    expected_result = pl.DataFrame(
         [
             ['TBR', '1', '2', '50 %', '8'],
             ['555', '3', '4', '45%', np.nan],
@@ -97,10 +97,10 @@ def test_coalesce_nulls(sample_unprocessed_result: pd.DataFrame) -> None:
 
     actual_result = postprocessing.coalesce_nulls(sample_unprocessed_result).reset_index(drop=True)
 
-    pd.testing.assert_frame_equal(actual_result, expected_result)
+    pl.testing.assert_frame_equal(actual_result, expected_result)
 
 
-def test_columns_except(sample_unprocessed_result: pd.DataFrame) -> None:
+def test_columns_except(sample_unprocessed_result: pl.DataFrame) -> None:
     expected_columns = ['Runs', 'Hits', 'CS%', 'HR']
 
     actual_columns = postprocessing.columns_except(sample_unprocessed_result, ['Team'])
@@ -108,8 +108,8 @@ def test_columns_except(sample_unprocessed_result: pd.DataFrame) -> None:
     assert set(expected_columns) == set(actual_columns)
 
 
-def test_convert_numeric(sample_unprocessed_result: pd.DataFrame) -> None:
-    expected_result = pd.DataFrame(
+def test_convert_numeric(sample_unprocessed_result: pl.DataFrame) -> None:
+    expected_result = pl.DataFrame(
         [
             ['TBR', 1.0, 2.0, '50 %', 8],
             ['555', 3.0, 4.0, '45%', np.nan],
@@ -122,11 +122,11 @@ def test_convert_numeric(sample_unprocessed_result: pd.DataFrame) -> None:
         ['Runs', 'Hits', 'HR']
     ).reset_index(drop=True)
 
-    pd.testing.assert_frame_equal(actual_result, expected_result)
+    pl.testing.assert_frame_equal(actual_result, expected_result)
 
 
-def test_convert_percentages(sample_unprocessed_result: pd.DataFrame) -> None:
-    expected_result = pd.DataFrame(
+def test_convert_percentages(sample_unprocessed_result: pl.DataFrame) -> None:
+    expected_result = pl.DataFrame(
         [
             ['TBR', '1', '2', 0.50, '8'],
             ['555', '3', '4', 0.45, 'null'],
@@ -139,4 +139,4 @@ def test_convert_percentages(sample_unprocessed_result: pd.DataFrame) -> None:
         ['CS%']
     ).reset_index(drop=True)
 
-    pd.testing.assert_frame_equal(actual_result, expected_result)
+    pl.testing.assert_frame_equal(actual_result, expected_result)

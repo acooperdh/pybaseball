@@ -20,7 +20,7 @@ material presented here. All information is subject to corrections
 as additional data are received. We are grateful to anyone who
 discovers discrepancies and we appreciate learning of the details.
 """
-import pandas as pd
+import polars as pl
 from pybaseball.utils import get_text_file
 from datetime import datetime
 from io import StringIO
@@ -170,7 +170,7 @@ def rosters(season):
 
     df_list = [_roster(team = r[:3], season = season, checked=False) for r in rosters]
 
-    return pd.concat(df_list)
+    return pl.concat(df_list)
 
 def _roster(team, season, checked = False):
     """
@@ -194,7 +194,7 @@ def _roster(team, season, checked = False):
             )
 
     s = get_text_file(roster_url.format(season, team, season))
-    data = pd.read_csv(StringIO(s), header=None, sep=',', quotechar='"')
+    data = pl.read_csv(StringIO(s), header=None, sep=',', quotechar='"')
     data.columns = roster_columns
     return data
 
@@ -203,7 +203,7 @@ def park_codes():
     Pulls retrosheet Park IDs
     """
     s = get_text_file(parkid_url)
-    data = pd.read_csv(StringIO(s), sep=',', quotechar='"')
+    data = pl.read_csv(StringIO(s), sep=',', quotechar='"')
     data.columns = parkcode_columns
     return data
 
@@ -221,7 +221,7 @@ def schedules(season):
     if file_name not in season_folder:
         raise ValueError(f'Schedule not available for {season}')
     s = get_text_file(schedule_url.format(season, season))
-    data = pd.read_csv(StringIO(s), header=None, sep=',', quotechar='"')
+    data = pl.read_csv(StringIO(s), header=None, sep=',', quotechar='"')
     data.columns = schedule_columns
     return data
 
@@ -239,7 +239,7 @@ def season_game_logs(season):
     if gamelog_file_name not in season_folder:
         raise ValueError(f'Season game logs not available for {season}')
     s = get_text_file(season_gamelog_url.format(season, season))
-    data = pd.read_csv(StringIO(s), header=None, sep=',', quotechar='"')
+    data = pl.read_csv(StringIO(s), header=None, sep=',', quotechar='"')
     data.columns = gamelog_columns
     return data
 
@@ -249,7 +249,7 @@ def world_series_logs():
     Pull Retrosheet World Series Game Logs
     """
     s = get_text_file(gamelog_url.format('WS'))
-    data = pd.read_csv(StringIO(s), header=None, sep=',', quotechar='"')
+    data = pl.read_csv(StringIO(s), header=None, sep=',', quotechar='"')
     data.columns = gamelog_columns
     return data
 
@@ -259,7 +259,7 @@ def all_star_game_logs():
     Pull Retrosheet All Star Game Logs
     """
     s = get_text_file(gamelog_url.format('AS'))
-    data = pd.read_csv(StringIO(s), header=None, sep=',', quotechar='"')
+    data = pl.read_csv(StringIO(s), header=None, sep=',', quotechar='"')
     data.columns = gamelog_columns
     return data
 
@@ -269,7 +269,7 @@ def wild_card_logs():
     Pull Retrosheet Wild Card Game Logs
     """
     s = get_text_file(gamelog_url.format('WC'))
-    data = pd.read_csv(StringIO(s), header=None, sep=',', quotechar='"')
+    data = pl.read_csv(StringIO(s), header=None, sep=',', quotechar='"')
     data.columns = gamelog_columns
     return data
 
@@ -279,7 +279,7 @@ def division_series_logs():
     Pull Retrosheet Division Series Game Logs
     """
     s = get_text_file(gamelog_url.format('DV'))
-    data = pd.read_csv(StringIO(s), header=None, sep=',', quotechar='"')
+    data = pl.read_csv(StringIO(s), header=None, sep=',', quotechar='"')
     data.columns = gamelog_columns
     return data
 
@@ -289,6 +289,6 @@ def lcs_logs():
     Pull Retrosheet LCS Game Logs
     """
     s = get_text_file(gamelog_url.format('LC'))
-    data = pd.read_csv(StringIO(s), header=None, sep=',', quotechar='"')
+    data = pl.read_csv(StringIO(s), header=None, sep=',', quotechar='"')
     data.columns = gamelog_columns
     return data

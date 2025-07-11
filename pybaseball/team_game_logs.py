@@ -1,4 +1,4 @@
-import pandas as pd
+import polars as pl
 from bs4 import BeautifulSoup
 
 from . import cache
@@ -9,7 +9,7 @@ session = BRefSession()
 _URL = "https://www.baseball-reference.com/teams/tgl.cgi?team={}&t={}&year={}"
 
 
-def get_table(season: int, team: str, log_type: str) -> pd.DataFrame:
+def get_table(season: int, team: str, log_type: str) -> pl.DataFrame:
     t_param = "b" if log_type == "batting" else "p"
     content = session.get(_URL.format(team, t_param, season)).content
     soup = BeautifulSoup(content, "lxml")
@@ -17,11 +17,11 @@ def get_table(season: int, team: str, log_type: str) -> pd.DataFrame:
     table = soup.find("table", attrs=dict(id=table_id))
     if table is None:
         raise RuntimeError("Table with expected id not found on scraped page.")
-    data = pd.read_html(str(table))[0]
+    data = pl.read_html(str(table))[0]
     return data
 
 
-def postprocess(data: pd.DataFrame) -> pd.DataFrame:
+def postprocess(data: pl.DataFrame) -> pl.DataFrame:
     data.drop("Rk", axis=1, inplace=True)  # drop index column
     repl_dict = {
         "Gtm": "Game",
@@ -33,13 +33,13 @@ def postprocess(data: pd.DataFrame) -> pd.DataFrame:
     data.rename(repl_dict, axis=1, inplace=True)
     data["Home"] = data["Home"].isnull()  # '@' if away, empty if home
     data = data[data["Game"].str.match(r"\d+")]  # drop empty month rows
-    data = data.apply(pd.to_numeric, errors="ignore")
+    data = data.apply(pl.to_numeric, errors="ignore")
     data["Game"] = data["Game"].astype(int)
     return data.reset_index(drop=True)
 
 
 @cache.df_cache()
-def team_game_logs(season: int, team: str, log_type: str="batting") -> pd.DataFrame:
+def team_game_logs(season: int, team: str, log_type: str="batting") -> pl.DataFrame:
     """
     Get Baseball Reference batting or pitching game logs for a team-season.
 

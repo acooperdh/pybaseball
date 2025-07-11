@@ -1,7 +1,7 @@
 from typing import Dict, List, Optional, Tuple, Union
 
 import bs4 as bs
-import pandas as pd
+import polars as pl
 import re
 
 from .datasources.bref import BRefSession
@@ -57,7 +57,7 @@ def get_player_info(playerid: str, soup: bs.BeautifulSoup = None) -> Dict:
     return player_info_data
 
 
-def get_splits(playerid: str, year: Optional[int] = None, player_info: bool = False, pitching_splits: bool = False) -> Union[pd.DataFrame, Tuple[pd.DataFrame, Dict]]:
+def get_splits(playerid: str, year: Optional[int] = None, player_info: bool = False, pitching_splits: bool = False) -> Union[pl.DataFrame, Tuple[pl.DataFrame, Dict]]:
     """
     Returns a dataframe of all split stats for a given player.
     If player_info is True, this will also return a dictionary that includes player position, handedness, height, weight, position, and team
@@ -124,26 +124,26 @@ def get_splits(playerid: str, year: Optional[int] = None, player_info: bool = Fa
                         cols.append(playerid)
                         raw_data.append([ele for ele in cols])
 
-    data = pd.DataFrame(raw_data)
+    data = pl.DataFrame(raw_data)
     data = data.rename(columns=data.iloc[0])
     data = data.reindex(data.index.drop(0))
     data = data.set_index(['Player ID', 'Split Type', 'Split'])
     data = data.drop(index=['Split'], level=2)
-    data = data.apply(pd.to_numeric, errors='coerce').convert_dtypes()
+    data = data.apply(pl.to_numeric, errors='coerce').convert_dtypes()
     data = data.dropna(axis=1, how='all')
     data['1B'] = data['H']-data['2B']-data['3B']-data['HR']
     data = data.loc[playerid]
     if pitching_splits is True: # Returns Game Level tables as a second dataframe for pitching splits
-        level_data = pd.DataFrame(raw_level_data)
+        level_data = pl.DataFrame(raw_level_data)
         level_data = level_data.rename(columns=level_data.iloc[0])
         level_data = level_data.reindex(level_data.index.drop(0))
         level_data = level_data.set_index(['Player ID', 'Split Type', 'Split'])
         level_data = level_data.drop(index=['Split'], level=2)
         level_data = level_data.apply(
-            pd.to_numeric, errors='coerce').convert_dtypes()
+            pl.to_numeric, errors='coerce').convert_dtypes()
         level_data = level_data.dropna(axis=1, how='all')
         level_data = level_data.loc[playerid]
-        # data = pd.concat([data, level_data])
+        # data = pl.concat([data, level_data])
     if player_info is False:
         if pitching_splits is True:
             return data, level_data

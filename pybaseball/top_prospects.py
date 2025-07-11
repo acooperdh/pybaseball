@@ -1,4 +1,4 @@
-import pandas as pd
+import polars as pl
 import requests
 
 from . import cache
@@ -32,7 +32,7 @@ def top_prospects(teamName=None, playerType=None):
             "hrome/104.0.5112.79 Safari/537.36"
         },
     ).content
-    prospectList = pd.read_html(res)
+    prospectList = pl.read_html(res)
     
     if playerType == "batters":
         topBattingProspects = postprocess(prospectList[0])
@@ -41,7 +41,7 @@ def top_prospects(teamName=None, playerType=None):
         topPitchingProspects = postprocess(prospectList[1])
         return topPitchingProspects
     elif playerType == None:
-        topProspects = pd.concat(prospectList)
+        topProspects = pl.concat(prospectList)
         topProspects.sort_values(by=['Rk'], inplace = True)
         topProspects = postprocess(topProspects)
         return topProspects

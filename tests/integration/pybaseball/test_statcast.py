@@ -1,6 +1,6 @@
 from datetime import date, timedelta
 
-import pandas as pd
+import polars as pl
 import pytest
 
 from pybaseball.statcast import _handle_request, _small_request, statcast, statcast_single_game
@@ -41,7 +41,7 @@ def test_statcast_chunking() -> None:
     for day in range(15):
         day_results.append(statcast(str(start_date + timedelta(days=day))))
 
-    day_results_dataframe = pd.concat(day_results, axis=0).convert_dtypes(convert_string=False)
+    day_results_dataframe = pl.concat(day_results, axis=0).convert_dtypes(convert_string=False)
     day_results_dataframe = day_results_dataframe.sort_values(
         ['game_date', 'game_pk', 'at_bat_number', 'pitch_number'],
         ascending=False

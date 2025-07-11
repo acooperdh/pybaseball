@@ -9,18 +9,18 @@ from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 import matplotlib.path
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
+import polars as pl
 
 from pybaseball.utils import pitch_code_to_name_map 
 
 CUR_PATH = Path(__file__).resolve().parent
 
 
-def _transform_coordinate(coord: pd.Series, center: float, scale: float, sign: float) -> pd.Series:
+def _transform_coordinate(coord: pl.Series, center: float, scale: float, sign: float) -> pl.Series:
     return sign * ((coord - center) * scale + center)
 
 
-def transform_coordinates(coords: pd.DataFrame, scale: float, x_center: float = 125, y_center: float = 199) -> pd.DataFrame:
+def transform_coordinates(coords: pl.DataFrame, scale: float, x_center: float = 125, y_center: float = 199) -> pl.DataFrame:
     x_transform = partial(_transform_coordinate, center=x_center, scale=scale, sign=+1)
     y_transform = partial(_transform_coordinate, center=y_center, scale=scale, sign=-1)
     return coords.assign(x=coords.x.apply(x_transform), y=coords.y.apply(y_transform))
@@ -36,7 +36,7 @@ def transform_coordinates(coords: pd.DataFrame, scale: float, x_center: float = 
 
 STADIUM_SCALE = 2.495 / 2.33
 STADIUM_COORDS = transform_coordinates(
-    pd.read_csv(Path(CUR_PATH, 'data', 'mlbstadiums.csv'), index_col=0), scale=STADIUM_SCALE
+    pl.read_csv(Path(CUR_PATH, 'data', 'mlbstadiums.csv'), index_col=0), scale=STADIUM_SCALE
 )
 
 
@@ -99,7 +99,7 @@ def plot_stadium(team: str, title: Optional[str] = None, width: Optional[int] = 
     return axis
 
 
-def spraychart(data: pd.DataFrame, team_stadium: str, title: str = '', tooltips: Optional[List['str']] = None,  # pylint: disable=too-many-arguments
+def spraychart(data: pl.DataFrame, team_stadium: str, title: str = '', tooltips: Optional[List['str']] = None,  # pylint: disable=too-many-arguments
                size: int = 100, colorby: str = 'events', legend_title: str = '', width: int = 500,
                height: int = 500) -> axes.Axes:
     """
@@ -173,7 +173,7 @@ def spraychart(data: pd.DataFrame, team_stadium: str, title: str = '', tooltips:
     return base
 
 
-def plot_strike_zone(data: pd.DataFrame, title: str = '', colorby: str = 'pitch_type', legend_title: str = '',
+def plot_strike_zone(data: pl.DataFrame, title: str = '', colorby: str = 'pitch_type', legend_title: str = '',
                      annotation: str = 'pitch_type', axis: Optional[axes.Axes] = None) -> axes.Axes:
     """
     Produces a pitches overlaid on a strike zone using StatCast data
@@ -272,7 +272,7 @@ def plot_strike_zone(data: pd.DataFrame, title: str = '', colorby: str = 'pitch_
         if annotation:
             for i, pitch_coord in zip(color_sub_data.index, zip(color_sub_data["plate_x"], color_sub_data['plate_z'])):
                 label_formatted = color_sub_data.loc[i, annotation]
-                label_formatted = label_formatted if not pd.isna(label_formatted) else ""
+                label_formatted = label_formatted if not pl.isna(label_formatted) else ""
                 
                 # these are numbers, format them that way
                 if annotation in ["release_speed", "effective_speed", "launch_speed"] and label_formatted != "":
@@ -297,7 +297,7 @@ def plot_strike_zone(data: pd.DataFrame, title: str = '', colorby: str = 'pitch_
     return axis
 
 
-def plot_bb_profile(df: pd.DataFrame, parameter: Optional[str] = "launch_angle") -> None:
+def plot_bb_profile(df: pl.DataFrame, parameter: Optional[str] = "launch_angle") -> None:
     """Plots a given StatCast parameter split by bb_type
 
     Args:
@@ -316,7 +316,7 @@ def plot_bb_profile(df: pd.DataFrame, parameter: Optional[str] = "launch_angle")
         plt.tick_params(labelsize=12)
 
 
-def plot_teams(data: pd.DataFrame, x_axis: str, y_axis: str, title: Optional[str] = None) -> None:
+def plot_teams(data: pl.DataFrame, x_axis: str, y_axis: str, title: Optional[str] = None) -> None:
     """Plots a scatter plot with each MLB team
 
     Args:
